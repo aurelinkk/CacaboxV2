@@ -107,6 +107,8 @@ function show(m) {
   };
   media.addEventListener(isVideo(m.url) ? 'loadedmetadata' : 'load', fit);
   media.src = m.url;
+  // si le navigateur bloque la lecture avec le son, on relance en muet plutôt que de ne rien montrer
+  if (media.play) media.play().catch(() => { media.muted = true; media.play().catch(() => {}); });
   card.appendChild(media);
 
   if (m.caption) {

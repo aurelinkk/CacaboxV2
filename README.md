@@ -30,9 +30,9 @@ Télécharge le fichier qui correspond à ta machine dans la dernière version d
 
 | Machine | Fichier |
 |---|---|
-| Windows | `LiveKgb-x.y.z-win-x64.exe` |
-| Mac Apple Silicon (M1/M2/M3/M4) | `LiveKgb-x.y.z-mac-arm64.dmg` |
-| Mac Intel | `LiveKgb-x.y.z-mac-x64.dmg` |
+| Windows 10 / 11 | `LiveKgb_x.y.z_x64-setup.exe` |
+| Mac Apple Silicon (M1/M2/M3/M4) | `LiveKgb_x.y.z_aarch64.dmg` |
+| Mac Intel | `LiveKgb_x.y.z_x64.dmg` |
 
 L'appli n'est pas signée (il faut un certificat payant chez Microsoft et Apple), donc l'OS va râler au premier lancement :
 
@@ -45,7 +45,7 @@ L'appli n'est pas signée (il faut un certificat payant chez Microsoft et Apple)
 
 Une fois lancée, LiveKgb tourne en tâche de fond : son icône est près de l'horloge sur Windows (parfois cachée derrière la flèche `^`) et dans la barre de menu en haut sur Mac. Clique dessus pour ouvrir le panneau.
 
-> Pourquoi ~80 Mo ? L'appli embarque son propre moteur Chromium (c'est le principe d'Electron). On a déjà retiré les langues inutiles et poussé la compression au max.
+> L'appli pèse quelques Mo : elle utilise le moteur web déjà présent dans le système (WebView2 sur Windows, WebKit sur Mac) au lieu d'embarquer son propre navigateur. Sur un vieux Windows 10 sans WebView2, l'installeur le télécharge tout seul.
 
 ---
 
@@ -125,13 +125,13 @@ Sur [render.com](https://render.com) : *New* → *Web Service* → ce dépôt, p
 | Region | Frankfurt (EU) |
 | Instance Type | Free |
 
-Si l'adresse change, mets-la dans `DEFAULT_SERVER` en haut de `main.js` avant de publier une nouvelle version, pour que les potes n'aient rien à taper.
+Si l'adresse change, mets-la dans `DEFAULTS.server` en haut de `src/core.js` avant de publier une nouvelle version, pour que les potes n'aient rien à taper.
 
 ---
 
 ## 4. Développement en local
 
-Il te faut [Node.js](https://nodejs.org) (version LTS).
+Il te faut [Node.js](https://nodejs.org) (version LTS) et [Rust](https://rustup.rs). Sur Windows, installe aussi les *Build Tools* de Visual Studio (C++) ; sur Mac, `xcode-select --install`. Le guide complet : [prérequis Tauri](https://v2.tauri.app/start/prerequisites/).
 
 **Terminal 1, le serveur :**
 ```bash
@@ -143,7 +143,7 @@ npm start          # → LiveKgb server sur le port 8080
 **Terminal 2, l'appli :**
 ```bash
 npm install
-npm start
+npm run dev        # la 1re compilation Rust prend quelques minutes
 ```
 
 Dans le panneau, mets `ws://localhost:8080` comme serveur.
@@ -159,13 +159,17 @@ SERVER=wss://cacabox-server.onrender.com ROOM=monsalon node bot.js   # contre le
 ### Structure
 
 ```
-main.js            processus principal : fenêtres, tray, WebSocket, raccourcis
-preload.js         pont sécurisé entre le main et les pages
-overlay.html/.js   la fenêtre transparente (mème, badge expéditeur, pastilles)
-panel.html/.js     le panneau de contrôle (profil, connexion, affichage, envoi)
-assets/            icônes de la barre des tâches / barre de menu, image d'aperçu
-build/icon.png     icône de l'appli (installeurs, Dock, menu Démarrer)
-scripts/           signature ad hoc de l'appli Mac au moment du build
+src/                     les pages de l'appli (HTML / CSS / JS)
+  overlay.html/.js       la fenêtre transparente (mème, badge expéditeur, pastilles)
+  core.js                le cœur, dans l'overlay : réglages, connexion au serveur, placement à l'écran
+  panel.html/.js         le panneau de contrôle (profil, connexion, affichage, envoi)
+  bridge.js              relie le panneau et l'overlay (événements Tauri)
+src-tauri/               la partie Rust
+  src/main.rs            fenêtres, icône tray + menu, raccourcis globaux
+  tauri.conf.json        nom, version, fenêtres, installeurs
+  capabilities/          ce que les pages ont le droit de faire
+  icons/                 icônes de l'appli et de la barre des tâches / barre de menu
+build/icon.png           icône source (régénérer : npx tauri icon build/icon.png -o src-tauri/icons)
 server/server.js   le relais WebSocket (salons, présence, anti-spam, logs)
 server/bot.js      faux client pour tester seul
 ```
@@ -176,18 +180,20 @@ server/bot.js      faux client pour tester seul
 
 Les installeurs sont construits par **GitHub Actions** (`.github/workflows/build.yml`), pas besoin d'avoir un Mac.
 
-1. Monte la version dans `package.json` (ex. `"version": "0.5.0"`).
+1. Monte la version dans `src-tauri/tauri.conf.json` (ex. `"version": "0.6.0"`).
 2. Commit + push sur `main`.
-3. Crée un tag sur ce commit et pousse-le. Dans GitHub Desktop : *History* → clic droit sur le commit → *Create Tag* → `v0.5.0` → *Push origin*. En ligne de commande :
+3. Crée un tag sur ce commit et pousse-le. Dans GitHub Desktop : *History* → clic droit sur le commit → *Create Tag* → `v0.6.0` → *Push origin*. En ligne de commande :
    ```bash
-   git tag v0.5.0
-   git push origin v0.5.0
+   git tag v0.6.0
+   git push origin v0.6.0
    ```
 4. Onglet **Actions** : le build prend 5 à 10 min, puis le `.exe` et les `.dmg` apparaissent dans **Releases**.
 
 > ⚠️ Ne clique pas sur « Create a new release » à la main : le workflow le fait et y attache les installeurs. Et le tag doit pointer sur le **dernier** commit, sinon c'est l'ancien code qui est construit.
 
-**En local** : `npm run dist`. Les fichiers sortent dans `dist/`, mais seulement pour ton OS (`.exe` sur Windows, `.dmg` sur Mac).
+**En local** : `npm run dist`. Les fichiers sortent dans `src-tauri/target/release/bundle/`, mais seulement pour ton OS (`.exe` sur Windows, `.dmg` sur Mac).
+
+> La version est dans `src-tauri/tauri.conf.json` (c'est elle qui donne le nom des fichiers). Monte-la là, et dans `package.json` / `src-tauri/Cargo.toml` pour rester cohérent.
 
 ---
 
@@ -201,7 +207,9 @@ Les installeurs sont construits par **GitHub Actions** (`.github/workflows/build
 └──────────┘               └──────────────┘               └──────────┘
 ```
 
-L'overlay est une fenêtre Electron plein écran, transparente, sans bordure, `alwaysOnTop` au niveau `screen-saver`, avec `setIgnoreMouseEvents(true)` pour que les clics la traversent. Sur Mac, `setVisibleOnAllWorkspaces` lui permet de s'afficher aussi par-dessus les applis en plein écran.
+L'appli est faite avec [Tauri](https://tauri.app). L'overlay est une fenêtre transparente sans bordure, toujours au premier plan, qui ignore la souris pour que les clics la traversent. Sur Mac, elle est au niveau « économiseur d'écran » et visible sur tous les bureaux, y compris par-dessus les applis en plein écran.
+
+L'overlay garde la connexion au serveur et les réglages. Le panneau envoie les mèmes sur sa propre connexion « silencieuse », que le serveur ne compte pas dans les connectés.
 
 Le serveur ne stocke rien : il relaie les messages aux membres du salon et garde la liste des présents en mémoire. Il accepte uniquement des liens `https` ou des fichiers en base64 aux formats autorisés, limite les envois à 1 toutes les 2 s (4 s pour un fichier), coupe les légendes à 120 caractères et refuse plus de 30 personnes par salon.
 
@@ -230,7 +238,7 @@ Vérifiez que vous avez tous écrit le salon exactement pareil, majuscules compr
 Regarde les logs Render : une ligne `x` donne la raison. Souvent le lien n'est pas un lien *direct* : teste-le dans ton navigateur, tu dois voir l'image seule, pas une page web. Vérifie aussi que le mode muet est désactivé.
 
 **Le build échoue dans Actions / pas de release**
-Le tag doit commencer par `v` ou un chiffre (`v0.5.0`, `1.0`) et pointer sur le dernier commit. Ouvre le run en échec dans l'onglet Actions pour voir l'erreur.
+Le tag doit commencer par `v` ou un chiffre (`v0.6.0`, `1.0`) et pointer sur le dernier commit. Ouvre le run en échec dans l'onglet Actions pour voir l'erreur.
 
 **« npm : Impossible de charger le fichier ... npm.ps1 » (Windows)**
 PowerShell bloque les scripts. Une fois pour toutes :
@@ -239,7 +247,7 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
 **`npm install` affiche des « vulnerabilities »**
-Elles viennent des outils de build, pas de l'appli. Ne lance pas `npm audit fix --force`, ça casse souvent Electron.
+Elles viennent des outils de build, pas de l'appli. Ne lance pas `npm audit fix --force`.
 
 **L'overlay est resté coincé à l'écran**
 `Ctrl/Cmd + Shift + X`. Sinon, clique sur l'icône dans la barre des tâches → *Quitter*.

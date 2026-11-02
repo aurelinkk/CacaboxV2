@@ -22,12 +22,12 @@ function fill(c) {
 }
 
 /* ----- affichage : écran, position, taille (enregistré tout de suite, sans reconnexion) ----- */
-let disp = { display: 0, position: 'center', size: 'm' };
+let disp = { display: '', position: 'center', size: 'm' };
 function fillDisplay(c) {
-  disp = { display: c.display || 0, position: c.position || 'center', size: c.size || 'm' };
+  disp = { display: c.display || '', position: c.position || 'center', size: c.size || 'm' };
   $('size').value = disp.size;
   for (const b of document.querySelectorAll('#posGrid button')) b.classList.toggle('on', b.dataset.pos === disp.position);
-  if ([...$('display').options].some((o) => Number(o.value) === disp.display)) $('display').value = String(disp.display);
+  if ([...$('display').options].some((o) => o.value === disp.display)) $('display').value = disp.display;
 }
 function fillDisplays(list) {
   const sel = $('display');
@@ -45,7 +45,7 @@ async function saveDisplay(preview = true) {
   fillDisplay(c);
   if (preview) window.livekgb.preview();
 }
-$('display').onchange = () => { disp.display = Number($('display').value); saveDisplay(); };
+$('display').onchange = () => { disp.display = $('display').value; saveDisplay(); };
 $('size').onchange = () => { disp.size = $('size').value; saveDisplay(); };
 for (const b of document.querySelectorAll('#posGrid button')) {
   b.onclick = () => { disp.position = b.dataset.pos; saveDisplay(); };

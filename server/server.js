@@ -35,18 +35,22 @@ wss.on('connection', (ws, req) => {
   const params = new URL(req.url, 'http://x').searchParams;
   const room = (params.get('room') || '').trim().slice(0, 40);
   if (!room) return ws.close(1008, 'salon manquant');
+  // connexion « silent » : sert seulement à envoyer (panneau de l'appli), pas comptée dans les connectés
+  const silent = params.get('silent') === '1';
 
   if (!rooms.has(room)) rooms.set(room, new Set());
   const set = rooms.get(room);
-  if (set.size >= MAX_PER_ROOM) return ws.close(1013, 'salon plein');
+  if (!silent && set.size >= MAX_PER_ROOM) return ws.close(1013, 'salon plein');
 
   ws.id = crypto.randomUUID().slice(0, 8);
   ws.profile = { name: (params.get('name') || 'anonyme').slice(0, 24), avatar: '' };
   ws.isAlive = true;
   ws.lastSent = 0;
-  set.add(ws);
-  log(room, `+ ${ws.profile.name} connecté (${set.size} dans le salon)`);
-  sendPresence(room);
+  if (!silent) {
+    set.add(ws);
+    log(room, `+ ${ws.profile.name} connecté (${set.size} dans le salon)`);
+    sendPresence(room);
+  } else if (!set.size) rooms.delete(room);
 
   ws.on('pong', () => { ws.isAlive = true; });
   ws.on('message', (raw) => {
@@ -54,7 +58,7 @@ wss.on('connection', (ws, req) => {
 
     if (m.type === 'hello') {
       ws.profile = { name: String(m.name || 'anonyme').slice(0, 24), avatar: validAvatar(m.avatar) ? m.avatar : '' };
-      return sendPresence(room);
+      return silent ? undefined : sendPresence(room);
     }
 
     if (m.type === 'blague') {
@@ -64,7 +68,7 @@ wss.on('connection', (ws, req) => {
       if (!validMedia(m.url)) return log(room, `x ${ws.profile.name} : média refusé`), err(ws, 'Média invalide (https, png/jpg/gif/webp/mp4/webm)');
       ws.lastSent = now;
       const kind = isData ? `fichier ${m.url.slice(5, m.url.indexOf(';'))} ${(m.url.length * 0.75 / 1024 / 1024).toFixed(1)} Mo` : `lien ${m.url}`;
-      log(room, `> ${ws.profile.name} envoie ${kind} « ${String(m.caption || '').slice(0, 120)} » -> ${set.size} personne(s)`);
+      log(room, `> ${ws.profile.name} envoie ${kind} « ${String(m.caption || '').slice(0, 120)} » -> ${(rooms.get(room) || []).size || 0} personne(s)`);
 
       broadcast(room, {
         type: 'blague',
@@ -76,6 +80,7 @@ wss.on('connection', (ws, req) => {
     }
   });
   ws.on('close', () => {
+    if (silent) return;
     set.delete(ws);
     log(room, `- ${ws.profile.name} déconnecté (${set.size} restant(s))`);
     if (!set.size) rooms.delete(room); else sendPresence(room);
