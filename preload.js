@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const CHANNELS = ['blague', 'clear', 'status', 'config', 'presence'];
-contextBridge.exposeInMainWorld('cacabox', {
+contextBridge.exposeInMainWorld('livekgb', {
   getConfig: () => ipcRenderer.invoke('get-config'),
   saveConfig: (c) => ipcRenderer.invoke('save-config', c),
   send: (m) => ipcRenderer.invoke('send', m),

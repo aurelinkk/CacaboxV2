@@ -40,12 +40,12 @@ function renderPresence(list) {
     presenceEl.appendChild(u);
   }
 }
-window.cacabox.on('presence', renderPresence);
-window.cacabox.on('config', (c) => { presenceEl.style.display = c.showPresence === false ? 'none' : ''; });
+window.livekgb.on('presence', renderPresence);
+window.livekgb.on('config', (c) => { presenceEl.style.display = c.showPresence === false ? 'none' : ''; });
 
 /* ---------- blagues ---------- */
-window.cacabox.on('blague', (m) => { queue.push(m); next(); });
-window.cacabox.on('clear', () => {
+window.livekgb.on('blague', (m) => { queue.push(m); next(); });
+window.livekgb.on('clear', () => {
   queue.length = 0; clearTimeout(timer);
   stage.innerHTML = ''; fromEl.classList.remove('in'); busy = false;
 });

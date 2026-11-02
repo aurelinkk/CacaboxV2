@@ -1,6 +1,6 @@
-# 💩 Cacabox
+# 💩 LiveKgb
 
-Overlay de blagues entre potes, pour **Windows et Mac**. Quelqu'un envoie un mème, et il s'affiche au milieu de l'écran de tout le monde — par-dessus n'importe quelle appli, même le bureau ou un jeu en fenêtré. C'est l'idée des alertes Streamlabs, mais en appli de bureau, sans streaming.
+Overlay de blagues entre potes, pour **Windows et Mac**. Quelqu'un envoie un mème, et il s'affiche au milieu de l'écran de tout le monde, par-dessus n'importe quelle appli, même le bureau ou un jeu en fenêtré. C'est l'idée des alertes Streamlabs, mais en appli de bureau, sans streaming.
 
 - 🖼️ Image, GIF ou vidéo + légende au centre de l'écran
 - 🟢 Pastilles des connectés en haut à droite, avec photo de profil
@@ -14,9 +14,9 @@ Overlay de blagues entre potes, pour **Windows et Mac**. Quelqu'un envoie un mè
 ## Sommaire
 1. [Installation pour les potes](#1-installation-pour-les-potes)
 2. [Utilisation](#2-utilisation)
-3. [Héberger le serveur](#3-héberger-le-serveur)
+3. [Le serveur](#3-le-serveur)
 4. [Développement en local](#4-développement-en-local)
-5. [Générer les installeurs](#5-générer-les-installeurs)
+5. [Publier une nouvelle version](#5-publier-une-nouvelle-version)
 6. [Comment ça marche](#6-comment-ça-marche)
 7. [Limites connues](#7-limites-connues)
 8. [Problèmes fréquents](#8-problèmes-fréquents)
@@ -25,20 +25,22 @@ Overlay de blagues entre potes, pour **Windows et Mac**. Quelqu'un envoie un mè
 
 ## 1. Installation pour les potes
 
-Télécharge le fichier qui correspond à ta machine dans l'onglet **[Releases](../../releases)** :
+Télécharge le fichier qui correspond à ta machine dans la dernière version de l'onglet **[Releases](../../releases/latest)** :
 
 | Machine | Fichier |
 |---|---|
-| Windows | `Cacabox-x.y.z-win-x64.exe` |
-| Mac Apple Silicon (M1/M2/M3/M4) | `Cacabox-x.y.z-mac-arm64.dmg` |
-| Mac Intel | `Cacabox-x.y.z-mac-x64.dmg` |
+| Windows | `LiveKgb-x.y.z-win-x64.exe` |
+| Mac Apple Silicon (M1/M2/M3/M4) | `LiveKgb-x.y.z-mac-arm64.dmg` |
+| Mac Intel | `LiveKgb-x.y.z-mac-x64.dmg` |
 
 L'appli n'est pas signée (il faut un certificat payant chez Microsoft et Apple), donc l'OS va râler au premier lancement :
 
 - **Windows** : écran bleu SmartScreen → *Informations complémentaires* → *Exécuter quand même*.
-- **Mac** : glisse Cacabox dans Applications, puis **clic droit sur l'appli → Ouvrir** → *Ouvrir*. Un double-clic classique serait refusé. À faire une seule fois.
+- **Mac** : glisse LiveKgb dans Applications, puis **clic droit sur l'appli → Ouvrir** → *Ouvrir*. Un double-clic classique serait refusé. À faire une seule fois.
 
-Une fois lancée, Cacabox tourne en tâche de fond : son icône est près de l'horloge sur Windows (parfois cachée derrière la flèche `^`) et dans la barre de menu en haut sur Mac. Clique dessus pour ouvrir le panneau.
+Une fois lancée, LiveKgb tourne en tâche de fond : son icône est près de l'horloge sur Windows (parfois cachée derrière la flèche `^`) et dans la barre de menu en haut sur Mac. Clique dessus pour ouvrir le panneau.
+
+> Pourquoi ~80 Mo ? L'appli embarque son propre moteur Chromium (c'est le principe d'Electron). On a déjà retiré les langues inutiles et poussé la compression au max.
 
 ---
 
@@ -46,10 +48,10 @@ Une fois lancée, Cacabox tourne en tâche de fond : son icône est près de l'h
 
 **Au premier lancement**, dans le panneau :
 1. Mets ton **pseudo** et choisis ta **photo de profil** (c'est elle qui apparaît dans les pastilles).
-2. Vérifie le **serveur** (`wss://...`) et le **salon**. Tout le monde doit avoir exactement le même salon pour se voir.
-3. Clique sur **Enregistrer & connecter**. Le statut passe à « Connecté ✔ (N en ligne) ».
+2. Le **serveur** est déjà rempli (`wss://cacabox-server.onrender.com`). Mets le **salon** que t'a donné ton pote : tout le monde doit avoir exactement le même pour se voir.
+3. Clique sur **Enregistrer & connecter**. Le statut passe à « Connecté ✓ (N en ligne) ».
 
-> Le nom du salon sert de mot de passe : qui le connaît peut entrer. Prends autre chose que `cacabox`.
+> Le nom du salon sert de mot de passe : qui le connaît peut t'afficher des trucs à l'écran. Choisis un nom pas devinable, genre `livekgb-k7f2q`.
 
 **Pour envoyer un mème :**
 - Soit tu colles un **lien direct** en `https`, qui finit par `.gif`, `.png`, `.jpg`, `.webp`, `.mp4` ou `.webm`. Un lien de page comme `giphy.com/gifs/...` ne marche pas : il faut l'adresse du fichier (clic droit sur l'image → *Copier l'adresse de l'image*).
@@ -61,34 +63,56 @@ Ajoute une légende, règle la durée (2 à 15 s), puis **Envoyer 🚀**. Le mè
 
 | Raccourci | Effet |
 |---|---|
-| `Ctrl/Cmd + Shift + X` | Stop — vide l'écran immédiatement |
-| `Ctrl/Cmd + Shift + M` | Muet on/off — ne plus rien recevoir |
+| `Ctrl/Cmd + Shift + X` | Stop : vide l'écran immédiatement |
+| `Ctrl/Cmd + Shift + M` | Muet on/off : ne plus rien recevoir |
 | `Ctrl/Cmd + Shift + K` | Ouvrir le panneau |
 
 Pratique si quelqu'un envoie une bêtise pendant que tu partages ton écran.
 
 ---
 
-## 3. Héberger le serveur
+## 3. Le serveur
 
-Les applis ne se parlent pas directement : elles passent par un petit serveur relais. Tant qu'il tourne sur ton PC (`ws://localhost:8080`), seul toi peux te connecter. Pour tes potes, il faut le mettre en ligne. **Render** est gratuit et suffit largement.
+Les applis ne se parlent pas directement : elles passent par un petit serveur relais (`server/`). Il est hébergé gratuitement sur **Render** :
 
-1. Pousse ce dépôt sur GitHub.
-2. Sur [render.com](https://render.com) : *New* → *Web Service* → connecte ton dépôt.
-3. Réglages :
-   - **Root Directory** : `server`
-   - **Build Command** : `npm install`
-   - **Start Command** : `npm start`
-   - **Instance Type** : Free
-4. Render te donne une adresse en `https://xxx.onrender.com`. Dans Cacabox, mets-la en remplaçant `https` par **`wss`** : `wss://xxx.onrender.com`.
+- Adresse : `https://cacabox-server.onrender.com` (dans l'appli : **`wss://`**`cacabox-server.onrender.com`)
+- Ouvre l'adresse dans un navigateur : si tu vois `livekgb ok`, il tourne.
+- Il se **redéploie tout seul** à chaque push sur `main`.
 
-> ⚠️ L'offre gratuite de Render met le serveur en veille après quelques minutes sans activité. La première connexion peut alors prendre ~30 s : l'appli réessaie toute seule. Railway et Fly.io fonctionnent pareil, à toi de voir.
+> ⚠️ L'offre gratuite met le serveur en veille après ~15 min sans activité. La première connexion peut alors prendre 30 à 60 s : l'appli réessaie toute seule.
 
-**Pour éviter que tes potes aient à taper l'adresse**, ouvre `main.js` et mets ton serveur en dur avant de générer les installeurs :
+### Voir ce qui se passe (logs)
 
-```js
-const DEFAULT_SERVER = 'wss://xxx.onrender.com';
+Dans Render → ton service → **Logs** :
+
 ```
+[livekgb-k7f2q] + Aurelink connecté (1 dans le salon)
+[livekgb-k7f2q] > Aurelink envoie fichier image/jpeg 0.3 Mo « légende » -> 2 personne(s)
+[livekgb-k7f2q] x Toto : média refusé
+[livekgb-k7f2q] - Aurelink déconnecté (1 restant(s))
+```
+
+| Symbole | Signification |
+|---|---|
+| `+` / `-` | connexion / déconnexion |
+| `>` | blague envoyée, et à combien de personnes |
+| `x` | blague refusée (trop rapide, lien invalide…) |
+
+Le contenu des fichiers n'est jamais écrit dans les logs, seulement leur type et leur taille. Quand tu cliques sur *Enregistrer & connecter*, tu peux voir passer « 2 dans le salon » puis une déconnexion : c'est l'ancienne connexion qui se ferme, c'est normal.
+
+### Recréer le serveur ailleurs
+
+Sur [render.com](https://render.com) : *New* → *Web Service* → ce dépôt, puis :
+
+| Champ | Valeur |
+|---|---|
+| Root Directory | `server` |
+| Build Command | `npm install` |
+| Start Command | `node server.js` |
+| Region | Frankfurt (EU) |
+| Instance Type | Free |
+
+Si l'adresse change, mets-la dans `DEFAULT_SERVER` en haut de `main.js` avant de publier une nouvelle version, pour que les potes n'aient rien à taper.
 
 ---
 
@@ -96,14 +120,14 @@ const DEFAULT_SERVER = 'wss://xxx.onrender.com';
 
 Il te faut [Node.js](https://nodejs.org) (version LTS).
 
-**Terminal 1 — le serveur :**
+**Terminal 1, le serveur :**
 ```bash
 cd server
 npm install
-npm start          # → Cacabox server sur le port 8080
+npm start          # → LiveKgb server sur le port 8080
 ```
 
-**Terminal 2 — l'appli :**
+**Terminal 2, l'appli :**
 ```bash
 npm install
 npm start
@@ -116,7 +140,7 @@ Dans le panneau, mets `ws://localhost:8080` comme serveur.
 cd server
 node bot.js
 node bot.js "https://exemple.com/truc.gif" "une légende"
-SERVER=wss://xxx.onrender.com ROOM=monsalon node bot.js   # contre ton serveur en ligne
+SERVER=wss://cacabox-server.onrender.com ROOM=monsalon node bot.js   # contre le serveur en ligne
 ```
 
 ### Structure
@@ -126,32 +150,28 @@ main.js            processus principal : fenêtres, tray, WebSocket, raccourcis
 preload.js         pont sécurisé entre le main et les pages
 overlay.html/.js   la fenêtre transparente (mème, badge expéditeur, pastilles)
 panel.html/.js     le panneau de contrôle (profil, connexion, envoi)
-server/server.js   le relais WebSocket (salons, présence, anti-spam)
+server/server.js   le relais WebSocket (salons, présence, anti-spam, logs)
 server/bot.js      faux client pour tester seul
 ```
 
 ---
 
-## 5. Générer les installeurs
+## 5. Publier une nouvelle version
 
-### Le plus simple : GitHub Actions (pas besoin d'avoir un Mac)
+Les installeurs sont construits par **GitHub Actions** (`.github/workflows/build.yml`), pas besoin d'avoir un Mac.
 
-Le workflow `.github/workflows/build.yml` construit le `.exe` et les `.dmg` sur les machines de GitHub, puis les publie dans les Releases.
+1. Monte la version dans `package.json` (ex. `"version": "0.5.0"`).
+2. Commit + push sur `main`.
+3. Crée un tag sur ce commit et pousse-le. Dans GitHub Desktop : *History* → clic droit sur le commit → *Create Tag* → `v0.5.0` → *Push origin*. En ligne de commande :
+   ```bash
+   git tag v0.5.0
+   git push origin v0.5.0
+   ```
+4. Onglet **Actions** : le build prend 5 à 10 min, puis le `.exe` et les `.dmg` apparaissent dans **Releases**.
 
-```bash
-git tag v0.2.0
-git push origin v0.2.0
-```
+> ⚠️ Ne clique pas sur « Create a new release » à la main : le workflow le fait et y attache les installeurs. Et le tag doit pointer sur le **dernier** commit, sinon c'est l'ancien code qui est construit.
 
-Va voir l'onglet **Actions**, attends quelques minutes, et les fichiers apparaissent dans **Releases**. Tu peux aussi le lancer à la main depuis l'onglet Actions (*Run workflow*).
-
-### En local
-
-```bash
-npm run dist
-```
-
-Les fichiers sortent dans `dist/`. Attention : on ne peut construire que pour son propre OS. Lancé sur Windows tu obtiens le `.exe`, sur Mac le `.dmg`.
+**En local** : `npm run dist`. Les fichiers sortent dans `dist/`, mais seulement pour ton OS (`.exe` sur Windows, `.dmg` sur Mac).
 
 ---
 
@@ -160,8 +180,8 @@ Les fichiers sortent dans `dist/`. Attention : on ne peut construire que pour so
 ```
    Toi                     Serveur relais                 Tes potes
 ┌──────────┐   WebSocket   ┌──────────────┐   WebSocket   ┌──────────┐
-│  Panneau │ ────────────► │   salon      │ ────────────► │  Overlay │
-│  Overlay │ ◄──────────── │  « lesPotes »│ ◄──────────── │  Panneau │
+│  Panneau │ ────────────► │    salon     │ ────────────► │  Overlay │
+│  Overlay │ ◄──────────── │ « livekgb-…» │ ◄──────────── │  Panneau │
 └──────────┘               └──────────────┘               └──────────┘
 ```
 
@@ -185,20 +205,22 @@ Le serveur ne stocke rien : il relaie les messages aux membres du salon et garde
 ## 8. Problèmes fréquents
 
 **« Déconnecté, nouvelle tentative… »**
-Le serveur ne tourne pas, ou l'adresse est fausse. En local, vérifie le terminal du serveur. En ligne, vérifie que l'adresse commence bien par `wss://` et pas `https://`, et patiente ~30 s si l'hébergeur sortait de veille.
+Le serveur dort ou l'adresse est fausse. Vérifie qu'elle commence par `wss://` et pas `https://`, ouvre `https://cacabox-server.onrender.com` dans ton navigateur pour le réveiller, et patiente une minute.
 
 **Je suis connecté mais je ne vois pas mes potes**
-Vérifiez que vous avez tous écrit le salon exactement pareil, majuscules comprises.
+Vérifiez que vous avez tous écrit le salon exactement pareil, majuscules comprises. Dans les logs Render, le nom entre crochets doit être identique pour tout le monde.
 
 **Rien ne s'affiche quand j'envoie**
-Le lien n'est sans doute pas un lien *direct*. Teste-le dans ton navigateur : tu dois voir l'image seule, pas une page web. Vérifie aussi que le mode muet est désactivé.
+Regarde les logs Render : une ligne `x` donne la raison. Souvent le lien n'est pas un lien *direct* : teste-le dans ton navigateur, tu dois voir l'image seule, pas une page web. Vérifie aussi que le mode muet est désactivé.
+
+**Le build échoue dans Actions / pas de release**
+Le tag doit commencer par `v` ou un chiffre (`v0.5.0`, `1.0`) et pointer sur le dernier commit. Ouvre le run en échec dans l'onglet Actions pour voir l'erreur.
 
 **« npm : Impossible de charger le fichier ... npm.ps1 » (Windows)**
 PowerShell bloque les scripts. Une fois pour toutes :
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
-Si c'est bloqué par ton entreprise, utilise `npm.cmd install` ou passe le terminal de VS Code en *Command Prompt*.
 
 **`npm install` affiche des « vulnerabilities »**
 Elles viennent des outils de build, pas de l'appli. Ne lance pas `npm audit fix --force`, ça casse souvent Electron.
@@ -210,4 +232,4 @@ Elles viennent des outils de build, pas de l'appli. Ne lance pas `npm audit fix 
 
 ## Licence
 
-MIT — fais-en ce que tu veux.
+MIT : fais-en ce que tu veux.

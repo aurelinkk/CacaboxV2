@@ -5,12 +5,14 @@ const WebSocket = require('ws');
 
 // ⚠️ Mets ici l'adresse de ton serveur hébergé (wss://...) AVANT de générer les installeurs :
 // tes potes n'auront alors rien à configurer, juste un pseudo.
-const DEFAULT_SERVER = 'ws://localhost:8080';
+const DEFAULT_SERVER = 'wss://cacabox-server.onrender.com';
 
 if (!app.requestSingleInstanceLock()) app.quit();
 
 const CONFIG_PATH = path.join(app.getPath('userData'), 'config.json');
-const DEFAULTS = { name: '', avatar: '', server: DEFAULT_SERVER, room: 'cacabox', muted: false, showPresence: true };
+// Récupère les réglages de l'ancienne version (quand l'appli s'appelait Cacabox)
+const OLD_CONFIG_PATH = path.join(app.getPath('appData'), 'Cacabox', 'config.json');
+const DEFAULTS = { name: '', avatar: '', server: DEFAULT_SERVER, room: 'livekgb', muted: false, showPresence: true };
 const MAX_UPLOAD = 6 * 1024 * 1024; // 6 Mo
 
 let cfg = { ...DEFAULTS };
@@ -19,7 +21,8 @@ let presence = [];
 let quitting = false;
 
 function loadConfig() {
-  try { cfg = { ...DEFAULTS, ...JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')) }; } catch {}
+  const file = fs.existsSync(CONFIG_PATH) ? CONFIG_PATH : OLD_CONFIG_PATH;
+  try { cfg = { ...DEFAULTS, ...JSON.parse(fs.readFileSync(file, 'utf8')) }; } catch {}
 }
 function saveConfig() {
   try { fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2)); } catch {}
@@ -59,7 +62,7 @@ function createOverlay() {
 function createPanel() {
   panel = new BrowserWindow({
     width: 460, height: 820,
-    title: 'Cacabox',
+    title: 'LiveKgb',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -75,7 +78,7 @@ function showPanel() { if (panel) { panel.show(); panel.focus(); } }
 /* ---------- Tray ---------- */
 function createTray() {
   tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png')));
-  tray.setToolTip('Cacabox');
+  tray.setToolTip('LiveKgb');
   const menu = () => Menu.buildFromTemplate([
     { label: 'Ouvrir le panneau', click: showPanel },
     { label: 'Muet', type: 'checkbox', checked: cfg.muted, click: (i) => setMuted(i.checked) },

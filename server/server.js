@@ -9,7 +9,7 @@ const rooms = new Map();                   // nom du salon -> Set de sockets
 
 const DATA_RE = /^data:(image\/(png|jpeg|gif|webp)|video\/(mp4|webm));base64,/;
 
-const server = http.createServer((_req, res) => { res.writeHead(200); res.end('cacabox ok'); });
+const server = http.createServer((_req, res) => { res.writeHead(200); res.end('livekgb ok'); });
 const wss = new WebSocketServer({ server, maxPayload: 9 * 1024 * 1024 });
 
 function validMedia(u) {
@@ -90,4 +90,4 @@ setInterval(() => {
   }
 }, 30000);
 
-server.listen(PORT, () => console.log('Cacabox server sur le port', PORT));
+server.listen(PORT, () => console.log('LiveKgb server sur le port', PORT));

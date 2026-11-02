@@ -4,7 +4,7 @@ const WebSocket = require('ws');
 const url = process.argv[2] || 'https://picsum.photos/480/320.jpg';
 const caption = process.argv[3] || "Salut, c'est le bot !";
 const server = process.env.SERVER || 'ws://localhost:8080';
-const room = process.env.ROOM || 'cacabox';
+const room = process.env.ROOM || 'livekgb';
 
 const ws = new WebSocket(`${server}?room=${encodeURIComponent(room)}&name=Robot`);
 ws.on('open', () => {

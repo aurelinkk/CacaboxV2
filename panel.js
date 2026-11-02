@@ -20,9 +20,9 @@ function fill(c) {
   setPic(c.avatar);
 }
 
-window.cacabox.getConfig().then(fill);
-window.cacabox.on('status', setStatus);
-window.cacabox.on('config', fill);
+window.livekgb.getConfig().then(fill);
+window.livekgb.on('status', setStatus);
+window.livekgb.on('config', fill);
 
 /* ----- photo de profil : recadrée en carré 80x80 puis stockée en JPEG ----- */
 $('pickAvatar').onclick = () => $('avatarFile').click();
@@ -41,7 +41,7 @@ $('avatarFile').onchange = async (e) => {
 };
 
 function saveAll() {
-  return window.cacabox.saveConfig({
+  return window.livekgb.saveConfig({
     name: $('name').value, avatar, server: $('server').value, room: $('room').value,
     muted: $('muted').checked, showPresence: $('showPresence').checked
   });
@@ -79,10 +79,10 @@ $('send').onclick = async () => {
   } catch { return setStatus({ text: '⚠ Lecture du fichier impossible' }); }
   if (!url) return setStatus({ text: 'Mets un lien ou joins un fichier 🙂' });
 
-  const r = await window.cacabox.send({
+  const r = await window.livekgb.send({
     url, caption: $('caption').value, duration: Number($('duration').value) || 6
   });
   if (!r.ok) setStatus({ text: '⚠ ' + r.error });
   else if (attached) $('clearFile').click();
 };
-$('panic').onclick = () => window.cacabox.panic();
+$('panic').onclick = () => window.livekgb.panic();

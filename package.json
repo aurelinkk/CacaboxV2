@@ -1,6 +1,6 @@
 {
-  "name": "cacabox",
-  "version": "0.2.0",
+  "name": "livekgb",
+  "version": "0.4.0",
   "description": "Overlay de blagues entre potes (Windows + Mac)",
   "main": "main.js",
   "scripts": {
@@ -15,8 +15,10 @@
     "electron-builder": "^25.0.0"
   },
   "build": {
-    "appId": "fr.potes.cacabox",
-    "productName": "Cacabox",
+    "appId": "fr.potes.livekgb",
+    "productName": "LiveKgb",
+    "compression": "maximum",
+    "electronLanguages": ["fr", "en", "en-US"],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "files": ["main.js", "preload.js", "overlay.*", "panel.*", "assets/**", "package.json"],
     "mac": {
