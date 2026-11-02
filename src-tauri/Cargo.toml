@@ -1,6 +1,6 @@
 [package]
 name = "livekgb"
-version = "0.5.1"
+version = "0.6.0"
 description = "Overlay de blagues entre potes"
 edition = "2021"
 

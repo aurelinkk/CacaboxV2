@@ -66,11 +66,22 @@ Une fois lancée, LiveKgb tourne en tâche de fond : son icône est près de l'h
 
 L'overlay évite la barre des tâches (Windows) et la barre de menu / le Dock (Mac), et se replace tout seul si tu branches un écran ou changes de résolution.
 
-**Pour envoyer un mème :**
-- Soit tu colles un **lien direct** en `https`, qui finit par `.gif`, `.png`, `.jpg`, `.webp`, `.mp4` ou `.webm`. Un lien de page comme `giphy.com/gifs/...` ne marche pas : il faut l'adresse du fichier (clic droit sur l'image → *Copier l'adresse de l'image*).
-- Soit tu cliques sur **📎 Joindre un fichier** et tu choisis une image ou une vidéo sur ton disque (6 Mo max).
+**Pour envoyer un mème**, mets au choix un texte, un média, ou les deux :
+- un **lien YouTube, TikTok, Instagram ou X** (voir le tableau ci-dessous) ;
+- un **lien direct** en `https` qui finit par `.gif`, `.png`, `.jpg`, `.webp`, `.mp4` ou `.webm`. Un lien de page comme `giphy.com/gifs/...` ne marche pas : il faut l'adresse du fichier (clic droit sur l'image → *Copier l'adresse de l'image*) ;
+- un **📎 fichier** de ton disque (6 Mo max) ;
+- ou **juste du texte** : il s'affiche en gros au milieu de l'écran.
 
-Ajoute une légende, règle la durée (2 à 15 s), puis **Envoyer 🚀**. Le mème s'affiche chez tout le monde dans le salon, toi compris.
+Règle la durée (2 à 30 s), puis **Envoyer 🚀**. Le mème s'affiche chez tout le monde dans le salon, toi compris. Une vidéo qui finit avant la durée libère l'écran plus tôt.
+
+| Lien | Ce qui s'affiche |
+|---|---|
+| YouTube (`watch`, `youtu.be`, Shorts, avec `?t=` pour démarrer plus loin) | Le lecteur YouTube, lancé tout seul |
+| TikTok (lien normal ou court `vm.tiktok.com`) | Le lecteur TikTok, lancé tout seul |
+| X / Twitter | La vidéo ou l'image du tweet, lue directement ; sinon le tweet tel quel |
+| Instagram (post, Reel) | L'aperçu Instagram du post. ⚠️ Instagram ne lance pas les vidéos tout seul, et l'overlay laisse passer les clics : on voit l'aperçu, pas la vidéo. |
+
+> Aucune vidéo n'est téléchargée par le serveur : il reconnaît juste le lien. Les lecteurs officiels sont affichés via une petite page du serveur (`/embed/...`), et les vidéos X sont lues directement depuis Twitter. Si le son est bloqué par le système, la vidéo démarre en muet plutôt que pas du tout.
 
 **Raccourcis clavier** (ils marchent depuis n'importe quelle appli) :
 
@@ -171,6 +182,7 @@ src-tauri/               la partie Rust
   icons/                 icônes de l'appli et de la barre des tâches / barre de menu
 build/icon.png           icône source (régénérer : npx tauri icon build/icon.png -o src-tauri/icons)
 server/server.js   le relais WebSocket (salons, présence, anti-spam, logs)
+server/social.js   liens YouTube / TikTok / Instagram / X et pages /embed/...
 server/bot.js      faux client pour tester seul
 ```
 

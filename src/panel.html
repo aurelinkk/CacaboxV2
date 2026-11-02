@@ -86,8 +86,8 @@
   <small>Ces réglages ne concernent que ton écran. Chacun règle le sien.</small>
 
   <h2>Envoyer une blague</h2>
-  <label>Lien direct (https) vers .gif .png .jpg .webp .mp4 .webm</label>
-  <input id="url" type="text" placeholder="https://…/truc.gif">
+  <label>Lien YouTube, TikTok, Insta, X… ou lien direct vers une image / vidéo</label>
+  <input id="url" type="text" placeholder="https://youtu.be/…  ·  https://…/truc.gif">
   <div class="or">— ou —</div>
   <div class="file">
     <button class="alt" id="pickFile">📎 Joindre un fichier</button>
@@ -96,10 +96,10 @@
   </div>
   <input id="mediaFile" type="file" accept="image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm">
 
-  <label>Légende</label>
+  <label>Texte <span style="color:#777">(facultatif si tu mets un média)</span></label>
   <input id="caption" type="text" maxlength="120" placeholder="quand le build passe du premier coup">
   <div class="row">
-    <div><label>Durée (s)</label><input id="duration" type="number" min="2" max="15" value="6"></div>
+    <div><label>Durée (s)</label><input id="duration" type="number" min="2" max="30" value="6"></div>
     <button id="send">Envoyer 🚀</button>
   </div>
   <small>Raccourcis : Ctrl/Cmd+Shift+X = stop · +M = muet · +K = ce panneau</small>

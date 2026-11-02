@@ -61,7 +61,7 @@ window.livekgb.on('config', (c) => {
 window.livekgb.on('blague', (m) => { queue.push(m); next(); });
 window.livekgb.on('clear', () => {
   queue.length = 0; clearTimeout(timer);
-  stage.innerHTML = ''; busy = false;
+  stage.innerHTML = ''; embedFrame = null; busy = false;
 });
 
 function next() {
@@ -71,7 +71,7 @@ function next() {
 }
 
 function show(m) {
-  stage.innerHTML = '';
+  stage.innerHTML = ''; embedFrame = null;
   const card = document.createElement('div');
   card.className = 'card';
 
@@ -84,7 +84,8 @@ function show(m) {
   from.appendChild(nm);
   card.appendChild(from);
 
-  if (m.url) showMedia(card, m);
+  if (m.embed && m.embed.src) showEmbed(card, m.embed);
+  else if (m.url) showMedia(card, m);
 
   if (m.caption) {
     const cap = document.createElement('div');
@@ -96,6 +97,39 @@ function show(m) {
   requestAnimationFrame(() => card.classList.add('in'));
   timer = setTimeout(hide, (m.duration || 6) * 1000);
 }
+
+// taille du mème selon l'écran (HD, Retina, 4K…) et la taille choisie dans le panneau
+function fitBox(ratio) {
+  const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s')) || 1;
+  const maxW = Math.min(innerWidth * 0.6 * s, innerWidth * 0.92);
+  const maxH = Math.min(innerHeight * 0.5 * s, innerHeight * 0.72);
+  const w = Math.min(maxW, maxH * ratio);
+  return { w: Math.round(w), h: Math.round(w / ratio) };
+}
+
+// YouTube / TikTok / Instagram / X : lecteur officiel, via une page du serveur
+let embedFrame = null;
+function showEmbed(card, embed) {
+  const f = document.createElement('iframe');
+  f.className = 'media embed';
+  f.src = embed.src;
+  f.allow = 'autoplay; encrypted-media; fullscreen';
+  f.referrerPolicy = 'strict-origin-when-cross-origin';
+  // les vidéos verticales (Shorts, TikTok, Reels) ont droit à un peu plus de hauteur
+  const ratio = Number(embed.ratio) || 16 / 9;
+  const { w, h } = fitBox(ratio);
+  const k = ratio < 1 ? Math.min(1.35, (innerHeight * 0.8) / h) : 1;
+  f.style.width = Math.round(w * k) + 'px';
+  f.style.height = Math.round(h * k) + 'px';
+  embedFrame = f;
+  card.appendChild(f);
+}
+// la page du lecteur prévient quand la vidéo est finie (ou en erreur) : on libère l'écran
+window.addEventListener('message', (e) => {
+  if (!embedFrame || e.source !== embedFrame.contentWindow) return;
+  const what = e.data && e.data.livekgb;
+  if (what === 'ended' || what === 'error') hide();
+});
 
 function showMedia(card, m) {
   let media;
@@ -112,12 +146,9 @@ function showMedia(card, m) {
   const fit = () => {
     const nw = media.naturalWidth || media.videoWidth, nh = media.naturalHeight || media.videoHeight;
     if (!nw || !nh) return;
-    const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s')) || 1;
-    const maxW = Math.min(innerWidth * 0.6 * s, innerWidth * 0.92);
-    const maxH = Math.min(innerHeight * 0.5 * s, innerHeight * 0.72);
-    const r = Math.min(maxW / nw, maxH / nh);
-    media.style.width = Math.round(nw * r) + 'px';
-    media.style.height = Math.round(nh * r) + 'px';
+    const { w, h } = fitBox(nw / nh);
+    media.style.width = w + 'px';
+    media.style.height = h + 'px';
   };
   media.addEventListener(isVideo(m.url) ? 'loadedmetadata' : 'load', fit);
   media.src = m.url;
@@ -131,5 +162,5 @@ function hide() {
   const card = stage.firstChild;
   if (!card) { busy = false; next(); return; }
   card.classList.remove('in');
-  setTimeout(() => { stage.innerHTML = ''; busy = false; next(); }, 300);
+  setTimeout(() => { stage.innerHTML = ''; embedFrame = null; busy = false; next(); }, 300);
 }
