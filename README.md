@@ -43,6 +43,8 @@ L'appli n'est pas signée (il faut un certificat payant chez Microsoft et Apple)
   xattr -cr /Applications/LiveKgb.app
   ```
 
+**Mises à jour** : à partir de la 0.6.0, plus besoin de retélécharger. L'appli vérifie toute seule à l'ouverture du panneau (puis toutes les 6 h), et affiche un bandeau quand une nouvelle version sort : *Installer et redémarrer*. Le bouton **🔄 Rechercher une mise à jour**, en bas du panneau, vérifie à la demande. Chaque mise à jour est signée : l'appli refuse un fichier qui ne vient pas de ce dépôt.
+
 Une fois lancée, LiveKgb tourne en tâche de fond : son icône est près de l'horloge sur Windows (parfois cachée derrière la flèche `^`) et dans la barre de menu en haut sur Mac. Clique dessus pour ouvrir le panneau.
 
 > L'appli pèse quelques Mo : elle utilise le moteur web déjà présent dans le système (WebView2 sur Windows, WebKit sur Mac) au lieu d'embarquer son propre navigateur. Sur un vieux Windows 10 sans WebView2, l'installeur le télécharge tout seul.
@@ -202,6 +204,8 @@ Les installeurs sont construits par **GitHub Actions** (`.github/workflows/build
 4. Onglet **Actions** : le build prend 5 à 10 min, puis le `.exe` et les `.dmg` apparaissent dans **Releases**.
 
 > ⚠️ Ne clique pas sur « Create a new release » à la main : le workflow le fait et y attache les installeurs. Et le tag doit pointer sur le **dernier** commit, sinon c'est l'ancien code qui est construit.
+
+> **Clé de signature des mises à jour** : le build signe chaque version avec la clé privée rangée dans le secret GitHub `TAURI_SIGNING_PRIVATE_KEY` (*Settings → Secrets and variables → Actions*). La clé publique correspondante est dans `src-tauri/tauri.conf.json` (`plugins.updater.pubkey`). Sans ce secret, le build échoue. Si tu perds la clé, il faut en générer une nouvelle (`npx tauri signer generate`) et tout le monde devra réinstaller l'appli une fois à la main.
 
 **En local** : `npm run dist`. Les fichiers sortent dans `src-tauri/target/release/bundle/`, mais seulement pour ton OS (`.exe` sur Windows, `.dmg` sur Mac).
 

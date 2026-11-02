@@ -47,6 +47,8 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_panel(app)))
+        .plugin(tauri_plugin_updater::Builder::new().build()) // mises à jour depuis les Releases GitHub
+        .plugin(tauri_plugin_process::init()) // redémarrer après une mise à jour
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_shortcuts([stop, mute, open])

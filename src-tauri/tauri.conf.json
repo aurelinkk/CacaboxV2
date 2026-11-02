@@ -70,6 +70,18 @@
           "French"
         ]
       }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQxMTU2NEUzQjk5Qzk1NzAKUldSd2xaeTU0MlFWUWJmZGdwYW1hK2w1L3hKa0RDVUxRRS9rMmtZbkFKbTRyZSs3WTU5ckxHWVIK",
+      "endpoints": [
+        "https://github.com/aurelinkk/CacaboxV2/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
     }
   }
 }
