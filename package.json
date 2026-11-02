@@ -1,31 +1,13 @@
 {
   "name": "livekgb",
-  "version": "0.4.2",
+  "version": "0.5.0",
+  "private": true,
   "description": "Overlay de blagues entre potes (Windows + Mac)",
-  "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder --publish never"
-  },
-  "dependencies": {
-    "ws": "^8.18.0"
+    "dev": "tauri dev",
+    "dist": "tauri build"
   },
   "devDependencies": {
-    "electron": "^33.0.0",
-    "electron-builder": "^25.0.0"
-  },
-  "build": {
-    "appId": "fr.potes.livekgb",
-    "productName": "LiveKgb",
-    "compression": "maximum",
-    "afterPack": "scripts/adhoc-sign.js",
-    "electronLanguages": ["fr", "en", "en-US"],
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
-    "files": ["main.js", "preload.js", "overlay.*", "panel.*", "assets/**", "package.json"],
-    "mac": {
-      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
-      "category": "public.app-category.entertainment"
-    },
-    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }] }
+    "@tauri-apps/cli": "^2.0.0"
   }
 }

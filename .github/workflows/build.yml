@@ -2,14 +2,21 @@ name: Build installeurs
 
 on:
   push:
-    tags: ['v*', '[0-9]*']
-  workflow_dispatch:   # ou à la main depuis l'onglet Actions
+    tags: ['v*', '[0-9]*']   # se déclenche sur un tag, ex: v0.5.0
+  workflow_dispatch:         # ou à la main depuis l'onglet Actions (build de test, sans release)
 
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            target: aarch64-apple-darwin   # Mac M1/M2/M3/M4
+          - os: macos-latest
+            target: x86_64-apple-darwin    # Mac Intel
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -18,19 +25,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
       - run: npm install
-      - run: npx electron-builder --publish never
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - run: npx tauri build --target ${{ matrix.target }}
+
       - name: Vérifier la signature Mac
         if: runner.os == 'macOS'
+        run: codesign --verify --deep --strict --verbose=2 src-tauri/target/${{ matrix.target }}/release/bundle/macos/LiveKgb.app
+
+      - name: Rassembler les installeurs
+        shell: bash
         run: |
-          for app in dist/mac*/*.app; do
-            echo "== $app"; codesign --verify --deep --strict --verbose=2 "$app"
-          done
+          mkdir out
+          cp src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe out/ 2>/dev/null || true
+          cp src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg out/ 2>/dev/null || true
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installeur-${{ matrix.target }}
+          path: out/*
+
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: |
-            dist/*.exe
-            dist/*.dmg
+          files: out/*
