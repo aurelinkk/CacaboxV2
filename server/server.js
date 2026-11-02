@@ -28,6 +28,7 @@ function sendPresence(room) {
   const members = [...(rooms.get(room) || [])].map((c) => ({ id: c.id, name: c.profile.name, avatar: c.profile.avatar }));
   broadcast(room, { type: 'presence', members });
 }
+const log = (room, msg) => console.log(`[${room}] ${msg}`);
 const err = (ws, message) => ws.send(JSON.stringify({ type: 'error', message }));
 
 wss.on('connection', (ws, req) => {
@@ -44,6 +45,7 @@ wss.on('connection', (ws, req) => {
   ws.isAlive = true;
   ws.lastSent = 0;
   set.add(ws);
+  log(room, `+ ${ws.profile.name} connecté (${set.size} dans le salon)`);
   sendPresence(room);
 
   ws.on('pong', () => { ws.isAlive = true; });
@@ -58,9 +60,11 @@ wss.on('connection', (ws, req) => {
     if (m.type === 'blague') {
       const isData = typeof m.url === 'string' && m.url.startsWith('data:');
       const now = Date.now();
-      if (now - ws.lastSent < (isData ? 4000 : 2000)) return err(ws, isData ? 'Doucement : 1 upload toutes les 4 s' : 'Doucement : 1 blague toutes les 2 s');
-      if (!validMedia(m.url)) return err(ws, 'Média invalide (https, png/jpg/gif/webp/mp4/webm)');
+      if (now - ws.lastSent < (isData ? 4000 : 2000)) return log(room, `x ${ws.profile.name} : trop rapide`), err(ws, isData ? 'Doucement : 1 upload toutes les 4 s' : 'Doucement : 1 blague toutes les 2 s');
+      if (!validMedia(m.url)) return log(room, `x ${ws.profile.name} : média refusé`), err(ws, 'Média invalide (https, png/jpg/gif/webp/mp4/webm)');
       ws.lastSent = now;
+      const kind = isData ? `fichier ${m.url.slice(5, m.url.indexOf(';'))} ${(m.url.length * 0.75 / 1024 / 1024).toFixed(1)} Mo` : `lien ${m.url}`;
+      log(room, `> ${ws.profile.name} envoie ${kind} « ${String(m.caption || '').slice(0, 120)} » -> ${set.size} personne(s)`);
 
       broadcast(room, {
         type: 'blague',
@@ -73,6 +77,7 @@ wss.on('connection', (ws, req) => {
   });
   ws.on('close', () => {
     set.delete(ws);
+    log(room, `- ${ws.profile.name} déconnecté (${set.size} restant(s))`);
     if (!set.size) rooms.delete(room); else sendPresence(room);
   });
 });
