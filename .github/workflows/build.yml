@@ -36,7 +36,11 @@ jobs:
 
       - name: Vérifier la signature Mac
         if: runner.os == 'macOS'
-        run: codesign --verify --deep --strict --verbose=2 src-tauri/target/${{ matrix.target }}/release/bundle/macos/LiveKgb.app
+        run: |
+          dmg=$(ls src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg)
+          hdiutil attach -nobrowse -readonly -mountpoint /tmp/lk "$dmg"
+          codesign --verify --deep --strict --verbose=2 /tmp/lk/LiveKgb.app
+          hdiutil detach /tmp/lk
 
       - name: Rassembler les installeurs
         shell: bash
