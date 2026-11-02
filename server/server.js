@@ -62,19 +62,23 @@ wss.on('connection', (ws, req) => {
     }
 
     if (m.type === 'blague') {
-      const isData = typeof m.url === 'string' && m.url.startsWith('data:');
+      // texte seul, média seul, ou les deux
+      const url = typeof m.url === 'string' ? m.url.trim() : '';
+      const caption = String(m.caption || '').trim().slice(0, 120);
+      if (!url && !caption) return err(ws, 'Mets un texte, une image ou une vidéo');
+      const isData = url.startsWith('data:');
       const now = Date.now();
       if (now - ws.lastSent < (isData ? 4000 : 2000)) return log(room, `x ${ws.profile.name} : trop rapide`), err(ws, isData ? 'Doucement : 1 upload toutes les 4 s' : 'Doucement : 1 blague toutes les 2 s');
-      if (!validMedia(m.url)) return log(room, `x ${ws.profile.name} : média refusé`), err(ws, 'Média invalide (https, png/jpg/gif/webp/mp4/webm)');
+      if (url && !validMedia(url)) return log(room, `x ${ws.profile.name} : média refusé`), err(ws, 'Média invalide (https, png/jpg/gif/webp/mp4/webm)');
       ws.lastSent = now;
-      const kind = isData ? `fichier ${m.url.slice(5, m.url.indexOf(';'))} ${(m.url.length * 0.75 / 1024 / 1024).toFixed(1)} Mo` : `lien ${m.url}`;
-      log(room, `> ${ws.profile.name} envoie ${kind} « ${String(m.caption || '').slice(0, 120)} » -> ${(rooms.get(room) || []).size || 0} personne(s)`);
+      const kind = !url ? 'texte' : isData ? `fichier ${url.slice(5, url.indexOf(';'))} ${(url.length * 0.75 / 1024 / 1024).toFixed(1)} Mo` : `lien ${url}`;
+      log(room, `> ${ws.profile.name} envoie ${kind} « ${caption} » -> ${(rooms.get(room) || []).size || 0} personne(s)`);
 
       broadcast(room, {
         type: 'blague',
         from: { name: ws.profile.name, avatar: ws.profile.avatar },
-        url: m.url,
-        caption: String(m.caption || '').slice(0, 120),
+        url,
+        caption,
         duration: Math.min(Math.max(Number(m.duration) || 6, 2), 15)
       });
     }

@@ -110,7 +110,7 @@ $('send').onclick = async () => {
   try {
     if (attached) { setStatus({ text: 'Envoi du fichier…', ok: true }); url = await readDataUrl(attached); }
   } catch { return setStatus({ text: '⚠ Lecture du fichier impossible' }); }
-  if (!url) return setStatus({ text: 'Mets un lien ou joins un fichier 🙂' });
+  if (!url && !$('caption').value.trim()) return setStatus({ text: 'Mets un texte, un lien ou un fichier 🙂' });
 
   const r = await window.livekgb.send({
     url, caption: $('caption').value, duration: Number($('duration').value) || 6

@@ -84,6 +84,20 @@ function show(m) {
   from.appendChild(nm);
   card.appendChild(from);
 
+  if (m.url) showMedia(card, m);
+
+  if (m.caption) {
+    const cap = document.createElement('div');
+    cap.className = m.url ? 'caption' : 'caption solo'; // texte seul : plus gros
+    cap.textContent = m.caption;
+    card.appendChild(cap);
+  }
+  stage.appendChild(card);
+  requestAnimationFrame(() => card.classList.add('in'));
+  timer = setTimeout(hide, (m.duration || 6) * 1000);
+}
+
+function showMedia(card, m) {
   let media;
   if (isVideo(m.url)) {
     media = document.createElement('video');
@@ -110,17 +124,6 @@ function show(m) {
   // si le navigateur bloque la lecture avec le son, on relance en muet plutôt que de ne rien montrer
   if (media.play) media.play().catch(() => { media.muted = true; media.play().catch(() => {}); });
   card.appendChild(media);
-
-  if (m.caption) {
-    const cap = document.createElement('div');
-    cap.className = 'caption';
-    cap.textContent = m.caption;
-    card.appendChild(cap);
-  }
-  stage.appendChild(card);
-
-  requestAnimationFrame(() => card.classList.add('in'));
-  timer = setTimeout(hide, (m.duration || 6) * 1000);
 }
 
 function hide() {
