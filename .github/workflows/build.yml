@@ -6,7 +6,24 @@ on:
   workflow_dispatch:         # ou à la main depuis l'onglet Actions (build de test, sans release)
 
 jobs:
+  # Sur un tag : crée la release une seule fois, avant que les 3 builds y déposent leurs fichiers
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      id: ${{ steps.rel.outputs.id }}
+    steps:
+      - id: rel
+        uses: softprops/action-gh-release@v2
+        with:
+          name: LiveKgb ${{ github.ref_name }}
+          body: Télécharge le fichier qui correspond à ta machine ci-dessous. Si LiveKgb est déjà installé (0.6.0 ou plus), utilise plutôt le bouton « Rechercher une mise à jour » dans l'appli.
+
   build:
+    needs: release
+    if: ${{ !cancelled() && needs.release.result != 'failure' }}
     strategy:
       fail-fast: false
       matrix:
@@ -32,7 +49,16 @@ jobs:
         with:
           workspaces: src-tauri
       - run: npm install
-      - run: npx tauri build --target ${{ matrix.target }}
+      # Construit l'appli, signe la mise à jour, et (sur un tag) publie la release
+      # avec latest.json : c'est ce fichier que le bouton « Rechercher une mise à jour » lit.
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+        with:
+          args: --target ${{ matrix.target }}
+          releaseId: ${{ needs.release.outputs.id }}
 
       - name: Vérifier la signature Mac
         if: runner.os == 'macOS'
@@ -55,7 +81,3 @@ jobs:
           name: installeur-${{ matrix.target }}
           path: out/*
 
-      - uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: out/*

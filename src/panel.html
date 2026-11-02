@@ -29,6 +29,9 @@
   small { color: #8a8a95; display: block; margin-top: 6px; }
   .or { text-align: center; color: #777; margin: 8px 0 0; font-size: 12px; }
   input[type=file] { display: none; }
+  .upd { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: #2d3b2a; color: #cfe8c6; font-size: 13px; }
+  .upd button { margin: 8px 0 0; display: block; }
+  [hidden] { display: none !important; }
   select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #33343c; background: #26262c; color: #fff; font: inherit; }
   .disp { display: flex; gap: 14px; align-items: flex-start; margin-top: 8px; }
   .grid { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 24px); gap: 4px; padding: 6px; border-radius: 8px; background: #26262c; border: 1px solid #33343c; flex: none; }
@@ -41,6 +44,7 @@
 <body>
   <h1>💩 LiveKgb</h1>
   <div id="status">…</div>
+  <div id="updBanner" class="upd" hidden></div>
 
   <h2>Mon profil</h2>
   <div class="prof">
@@ -86,8 +90,8 @@
   <small>Ces réglages ne concernent que ton écran. Chacun règle le sien.</small>
 
   <h2>Envoyer une blague</h2>
-  <label>Lien direct (https) vers .gif .png .jpg .webp .mp4 .webm</label>
-  <input id="url" type="text" placeholder="https://…/truc.gif">
+  <label>Lien YouTube, TikTok, Insta, X… ou lien direct vers une image / vidéo</label>
+  <input id="url" type="text" placeholder="https://youtu.be/…  ·  https://…/truc.gif">
   <div class="or">— ou —</div>
   <div class="file">
     <button class="alt" id="pickFile">📎 Joindre un fichier</button>
@@ -96,14 +100,21 @@
   </div>
   <input id="mediaFile" type="file" accept="image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm">
 
-  <label>Légende</label>
+  <label>Texte <span style="color:#777">(facultatif si tu mets un média)</span></label>
   <input id="caption" type="text" maxlength="120" placeholder="quand le build passe du premier coup">
   <div class="row">
-    <div><label>Durée (s)</label><input id="duration" type="number" min="2" max="15" value="6"></div>
+    <div><label>Durée (s)</label><input id="duration" type="number" min="2" max="30" value="6"></div>
     <button id="send">Envoyer 🚀</button>
   </div>
   <small>Raccourcis : Ctrl/Cmd+Shift+X = stop · +M = muet · +K = ce panneau</small>
   <button class="alt" id="panic">Stop (vider l'écran)</button>
+
+  <h2>Mises à jour</h2>
+  <div class="row" style="align-items:center">
+    <span id="version" style="color:#bbb">Version …</span>
+    <button class="alt" id="checkUpdate" style="margin-top:0">🔄 Rechercher une mise à jour</button>
+  </div>
+  <small id="updInfo"></small>
 
   <script src="bridge.js"></script>
   <script src="panel.js"></script>

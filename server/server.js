@@ -1,6 +1,7 @@
 const http = require('http');
 const crypto = require('crypto');
 const { WebSocketServer } = require('ws');
+const { resolveSocial, embedPage } = require('./social');
 
 const PORT = process.env.PORT || 8080;
 const MAX_PER_ROOM = 30;
@@ -9,7 +10,16 @@ const rooms = new Map();                   // nom du salon -> Set de sockets
 
 const DATA_RE = /^data:(image\/(png|jpeg|gif|webp)|video\/(mp4|webm));base64,/;
 
-const server = http.createServer((_req, res) => { res.writeHead(200); res.end('livekgb ok'); });
+const server = http.createServer((req, res) => {
+  const u = new URL(req.url, 'http://x');
+  if (u.pathname.startsWith('/embed/')) {
+    const html = embedPage(u.pathname, u.searchParams);
+    if (!html) { res.writeHead(404); return res.end('introuvable'); }
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=3600' });
+    return res.end(html);
+  }
+  res.writeHead(200); res.end('livekgb ok');
+});
 const wss = new WebSocketServer({ server, maxPayload: 9 * 1024 * 1024 });
 
 function validMedia(u) {
@@ -17,6 +27,7 @@ function validMedia(u) {
   if (u.startsWith('data:')) return u.length <= MAX_DATA_URL && DATA_RE.test(u);
   try { return new URL(u).protocol === 'https:' && u.length <= 500; } catch { return false; }
 }
+const clampDuration = (d) => Math.min(Math.max(Number(d) || 6, 2), 30);
 function validAvatar(a) {
   return typeof a === 'string' && a.startsWith('data:image/') && a.length <= 30000;
 }
@@ -42,6 +53,9 @@ wss.on('connection', (ws, req) => {
   const set = rooms.get(room);
   if (!silent && set.size >= MAX_PER_ROOM) return ws.close(1013, 'salon plein');
 
+  // adresse publique de ce serveur, pour les pages /embed/... (Render est derrière un proxy https)
+  const proto = req.headers['x-forwarded-proto'] || (req.socket.encrypted ? 'https' : 'http');
+  ws.origin = `${String(proto).split(',')[0]}://${req.headers.host}`;
   ws.id = crypto.randomUUID().slice(0, 8);
   ws.profile = { name: (params.get('name') || 'anonyme').slice(0, 24), avatar: '' };
   ws.isAlive = true;
@@ -53,7 +67,7 @@ wss.on('connection', (ws, req) => {
   } else if (!set.size) rooms.delete(room);
 
   ws.on('pong', () => { ws.isAlive = true; });
-  ws.on('message', (raw) => {
+  ws.on('message', async (raw) => {
     let m; try { m = JSON.parse(raw); } catch { return; }
 
     if (m.type === 'hello') {
@@ -62,20 +76,41 @@ wss.on('connection', (ws, req) => {
     }
 
     if (m.type === 'blague') {
-      const isData = typeof m.url === 'string' && m.url.startsWith('data:');
+      // texte seul, média seul, ou les deux
+      const url = typeof m.url === 'string' ? m.url.trim() : '';
+      const caption = String(m.caption || '').trim().slice(0, 120);
+      if (!url && !caption) return err(ws, 'Mets un texte, une image ou une vidéo');
+      const isData = url.startsWith('data:');
       const now = Date.now();
       if (now - ws.lastSent < (isData ? 4000 : 2000)) return log(room, `x ${ws.profile.name} : trop rapide`), err(ws, isData ? 'Doucement : 1 upload toutes les 4 s' : 'Doucement : 1 blague toutes les 2 s');
-      if (!validMedia(m.url)) return log(room, `x ${ws.profile.name} : média refusé`), err(ws, 'Média invalide (https, png/jpg/gif/webp/mp4/webm)');
+      if (url && !isData) {
+        ws.lastSent = now; // compte tout de suite : la résolution du lien prend un moment
+        const social = await resolveSocial(url).catch(() => null);
+        if (social) {
+          if (social.error) return log(room, `x ${ws.profile.name} : ${social.error}`), err(ws, social.error);
+          const shown = social.embed ? 'lecteur ' + social.kind : 'fichier ' + social.kind;
+          log(room, `> ${ws.profile.name} envoie ${social.kind} (${shown}) « ${caption} » -> ${(rooms.get(room) || []).size || 0} personne(s)`);
+          return broadcast(room, {
+            type: 'blague',
+            from: { name: ws.profile.name, avatar: ws.profile.avatar },
+            url: social.url || '',
+            embed: social.embed ? { src: ws.origin + social.embed.path, ratio: social.embed.ratio } : undefined,
+            caption,
+            duration: clampDuration(m.duration)
+          });
+        }
+      }
+      if (url && !validMedia(url)) return log(room, `x ${ws.profile.name} : média refusé`), err(ws, 'Média invalide (https, png/jpg/gif/webp/mp4/webm)');
       ws.lastSent = now;
-      const kind = isData ? `fichier ${m.url.slice(5, m.url.indexOf(';'))} ${(m.url.length * 0.75 / 1024 / 1024).toFixed(1)} Mo` : `lien ${m.url}`;
-      log(room, `> ${ws.profile.name} envoie ${kind} « ${String(m.caption || '').slice(0, 120)} » -> ${(rooms.get(room) || []).size || 0} personne(s)`);
+      const kind = !url ? 'texte' : isData ? `fichier ${url.slice(5, url.indexOf(';'))} ${(url.length * 0.75 / 1024 / 1024).toFixed(1)} Mo` : `lien ${url}`;
+      log(room, `> ${ws.profile.name} envoie ${kind} « ${caption} » -> ${(rooms.get(room) || []).size || 0} personne(s)`);
 
       broadcast(room, {
         type: 'blague',
         from: { name: ws.profile.name, avatar: ws.profile.avatar },
-        url: m.url,
-        caption: String(m.caption || '').slice(0, 120),
-        duration: Math.min(Math.max(Number(m.duration) || 6, 2), 15)
+        url,
+        caption,
+        duration: clampDuration(m.duration)
       });
     }
   });

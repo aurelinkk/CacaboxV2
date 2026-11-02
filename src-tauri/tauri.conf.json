@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "LiveKgb",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "identifier": "fr.potes.livekgb",
   "build": {
     "frontendDist": "../src"
@@ -38,7 +38,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost ws: wss:",
+      "csp": "default-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; frame-src https: http://localhost:* http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost ws: wss:",
       "dangerousDisableAssetCspModification": [
         "style-src"
       ]
@@ -69,6 +69,18 @@
         "languages": [
           "French"
         ]
+      }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQxMTU2NEUzQjk5Qzk1NzAKUldSd2xaeTU0MlFWUWJmZGdwYW1hK2w1L3hKa0RDVUxRRS9rMmtZbkFKbTRyZSs3WTU5ckxHWVIK",
+      "endpoints": [
+        "https://github.com/aurelinkk/CacaboxV2/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
       }
     }
   }
