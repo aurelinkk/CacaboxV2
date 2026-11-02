@@ -1,0 +1,28 @@
+{
+  "name": "cacabox",
+  "version": "0.2.0",
+  "description": "Overlay de blagues entre potes (Windows + Mac)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "fr.potes.cacabox",
+    "productName": "Cacabox",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "files": ["main.js", "preload.js", "overlay.*", "panel.*", "assets/**", "package.json"],
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "category": "public.app-category.entertainment"
+    },
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }] }
+  }
+}

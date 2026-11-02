@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Cacabox</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 18px; font: 14px system-ui, 'Segoe UI', sans-serif; background: #1b1b1f; color: #eee; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #9a9aa5; margin: 22px 0 8px; }
+  label { display: block; margin: 8px 0 3px; color: #bbb; }
+  label.chk { display: flex; gap: 8px; align-items: center; margin: 10px 0 0; color: #ddd; }
+  input[type=text], input[type=number] { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #33343c; background: #26262c; color: #fff; }
+  button { margin-top: 10px; padding: 9px 14px; border: 0; border-radius: 8px; background: #8b5a2b; color: #fff; font-weight: 600; cursor: pointer; }
+  button.alt { background: #33343c; }
+  #status { margin-top: 6px; font-size: 13px; color: #e6b34a; }
+  #status.ok { color: #6ccf7a; }
+  .row { display: flex; gap: 10px; align-items: end; }
+  .row > * { flex: 1; }
+  .prof { display: flex; gap: 14px; align-items: center; }
+  .prof .pic { width: 64px; height: 64px; border-radius: 50%; background: #33343c; object-fit: cover; flex: none; }
+  .prof .col { flex: 1; }
+  .prof button { margin-top: 0; }
+  .file { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .file button { margin: 0; }
+  #fileName { color: #bbb; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  small { color: #8a8a95; display: block; margin-top: 6px; }
+  .or { text-align: center; color: #777; margin: 8px 0 0; font-size: 12px; }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+  <h1>💩 Cacabox</h1>
+  <div id="status">…</div>
+
+  <h2>Mon profil</h2>
+  <div class="prof">
+    <img id="pic" class="pic" alt="">
+    <div class="col">
+      <label style="margin-top:0">Pseudo</label>
+      <input id="name" type="text" maxlength="24" placeholder="Ton pseudo">
+    </div>
+  </div>
+  <button class="alt" id="pickAvatar">📷 Choisir ma photo</button>
+  <input id="avatarFile" type="file" accept="image/*">
+
+  <h2>Connexion</h2>
+  <label>Serveur</label><input id="server" type="text" placeholder="wss://ton-serveur.onrender.com">
+  <label>Salon (sert de mot de passe, choisis-en un pas devinable)</label><input id="room" type="text" placeholder="cacabox">
+  <label class="chk"><input id="showPresence" type="checkbox"> Afficher les connectés en haut à droite</label>
+  <label class="chk"><input id="muted" type="checkbox"> Muet (ne rien afficher chez moi)</label>
+  <button id="save">Enregistrer & connecter</button>
+
+  <h2>Envoyer une blague</h2>
+  <label>Lien direct (https) vers .gif .png .jpg .webp .mp4 .webm</label>
+  <input id="url" type="text" placeholder="https://…/truc.gif">
+  <div class="or">— ou —</div>
+  <div class="file">
+    <button class="alt" id="pickFile">📎 Joindre un fichier</button>
+    <span id="fileName">aucun fichier (6 Mo max)</span>
+    <button class="alt" id="clearFile" style="display:none">✕</button>
+  </div>
+  <input id="mediaFile" type="file" accept="image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm">
+
+  <label>Légende</label>
+  <input id="caption" type="text" maxlength="120" placeholder="quand le build passe du premier coup">
+  <div class="row">
+    <div><label>Durée (s)</label><input id="duration" type="number" min="2" max="15" value="6"></div>
+    <button id="send">Envoyer 🚀</button>
+  </div>
+  <small>Raccourcis : Ctrl/Cmd+Shift+X = stop · +M = muet · +K = ce panneau</small>
+  <button class="alt" id="panic">Stop (vider l'écran)</button>
+
+  <script src="panel.js"></script>
+</body>
+</html>

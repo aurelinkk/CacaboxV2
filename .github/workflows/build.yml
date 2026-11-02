@@ -1,0 +1,28 @@
+name: Build installeurs
+
+on:
+  push:
+    tags: ['v*']      # se déclenche quand tu pousses un tag, ex: v0.2.0
+  workflow_dispatch:   # ou à la main depuis l'onglet Actions
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx electron-builder --publish never
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/*.exe
+            dist/*.dmg
