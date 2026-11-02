@@ -4,6 +4,7 @@
   "private": true,
   "description": "Overlay de blagues entre potes (Windows + Mac)",
   "scripts": {
+    "tauri": "tauri",
     "dev": "tauri dev",
     "dist": "tauri build"
   },
