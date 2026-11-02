@@ -1,5 +1,4 @@
 const stage = document.getElementById('stage');
-const fromEl = document.getElementById('from');
 const presenceEl = document.getElementById('presence');
 const queue = [];
 let busy = false;
@@ -41,13 +40,28 @@ function renderPresence(list) {
   }
 }
 window.livekgb.on('presence', renderPresence);
-window.livekgb.on('config', (c) => { presenceEl.style.display = c.showPresence === false ? 'none' : ''; });
+const SIZE = { s: 0.6, m: 1, l: 1.35, xl: 1.6 };
+const FLEX = { top: 'flex-start', left: 'flex-start', center: 'center', bottom: 'flex-end', right: 'flex-end' };
+window.livekgb.on('config', (c) => {
+  presenceEl.style.display = c.showPresence === false ? 'none' : '';
+  // position : « top-left », « bottom », « center »… -> alignement vertical / horizontal
+  const p = c.position || 'center';
+  const v = p.includes('top') ? 'top' : p.includes('bottom') ? 'bottom' : 'center';
+  const h = p.includes('left') ? 'left' : p.includes('right') ? 'right' : 'center';
+  stage.style.alignItems = FLEX[v];
+  stage.style.justifyContent = FLEX[h];
+  document.documentElement.style.setProperty('--align', FLEX[h]);
+  document.documentElement.style.setProperty('--text', h === 'center' ? 'center' : h);
+  // sur un côté, le mème laisse la place aux connectés en haut à droite
+  stage.style.paddingTop = v === 'top' && h === 'right' ? 'calc(4vmin + 70px)' : '';
+  document.documentElement.style.setProperty('--s', SIZE[c.size] || 1);
+});
 
 /* ---------- blagues ---------- */
 window.livekgb.on('blague', (m) => { queue.push(m); next(); });
 window.livekgb.on('clear', () => {
   queue.length = 0; clearTimeout(timer);
-  stage.innerHTML = ''; fromEl.classList.remove('in'); busy = false;
+  stage.innerHTML = ''; busy = false;
 });
 
 function next() {
@@ -61,6 +75,15 @@ function show(m) {
   const card = document.createElement('div');
   card.className = 'card';
 
+  // badge « qui a envoyé », au-dessus du mème
+  const from = document.createElement('div');
+  from.className = 'from';
+  from.appendChild(avatarEl(m.from));
+  const nm = document.createElement('span');
+  nm.textContent = (m.from && m.from.name) || 'anonyme';
+  from.appendChild(nm);
+  card.appendChild(from);
+
   let media;
   if (isVideo(m.url)) {
     media = document.createElement('video');
@@ -69,7 +92,20 @@ function show(m) {
   } else {
     media = document.createElement('img');
   }
+  media.className = 'media';
   media.onerror = hide;
+  // agrandit ou réduit le mème pour qu'il ait la même place sur tous les écrans (HD, Retina, 4K…)
+  const fit = () => {
+    const nw = media.naturalWidth || media.videoWidth, nh = media.naturalHeight || media.videoHeight;
+    if (!nw || !nh) return;
+    const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s')) || 1;
+    const maxW = Math.min(innerWidth * 0.6 * s, innerWidth * 0.92);
+    const maxH = Math.min(innerHeight * 0.5 * s, innerHeight * 0.72);
+    const r = Math.min(maxW / nw, maxH / nh);
+    media.style.width = Math.round(nw * r) + 'px';
+    media.style.height = Math.round(nh * r) + 'px';
+  };
+  media.addEventListener(isVideo(m.url) ? 'loadedmetadata' : 'load', fit);
   media.src = m.url;
   card.appendChild(media);
 
@@ -81,21 +117,13 @@ function show(m) {
   }
   stage.appendChild(card);
 
-  // badge « qui a envoyé » en haut à gauche, en même temps
-  fromEl.innerHTML = '';
-  fromEl.appendChild(avatarEl(m.from));
-  const nm = document.createElement('span');
-  nm.textContent = (m.from && m.from.name) || 'anonyme';
-  fromEl.appendChild(nm);
-
-  requestAnimationFrame(() => { card.classList.add('in'); fromEl.classList.add('in'); });
+  requestAnimationFrame(() => card.classList.add('in'));
   timer = setTimeout(hide, (m.duration || 6) * 1000);
 }
 
 function hide() {
   clearTimeout(timer);
   const card = stage.firstChild;
-  fromEl.classList.remove('in');
   if (!card) { busy = false; next(); return; }
   card.classList.remove('in');
   setTimeout(() => { stage.innerHTML = ''; busy = false; next(); }, 300);

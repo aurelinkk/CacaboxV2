@@ -12,7 +12,10 @@ if (!app.requestSingleInstanceLock()) app.quit();
 const CONFIG_PATH = path.join(app.getPath('userData'), 'config.json');
 // Récupère les réglages de l'ancienne version (quand l'appli s'appelait Cacabox)
 const OLD_CONFIG_PATH = path.join(app.getPath('appData'), 'Cacabox', 'config.json');
-const DEFAULTS = { name: '', avatar: '', server: DEFAULT_SERVER, room: 'livekgb', muted: false, showPresence: true };
+const DEFAULTS = { name: '', avatar: '', server: DEFAULT_SERVER, room: 'livekgb', muted: false, showPresence: true,
+  display: 0, position: 'center', size: 'm' }; // display 0 = écran principal
+const POSITIONS = ['top-left', 'top', 'top-right', 'left', 'center', 'right', 'bottom-left', 'bottom', 'bottom-right'];
+const SIZES = ['s', 'm', 'l', 'xl'];
 const MAX_UPLOAD = 6 * 1024 * 1024; // 6 Mo
 
 let cfg = { ...DEFAULTS };
@@ -32,15 +35,36 @@ function status(text, ok = false) {
 }
 function pushOverlayState() {
   if (!overlay || overlay.isDestroyed()) return;
-  overlay.webContents.send('config', { showPresence: cfg.showPresence });
+  overlay.webContents.send('config', { showPresence: cfg.showPresence, position: cfg.position, size: cfg.size });
   overlay.webContents.send('presence', presence);
 }
 
 /* ---------- Overlay : fenêtre transparente, au-dessus de tout, clics traversants ---------- */
+function targetDisplay() {
+  return screen.getAllDisplays().find((d) => d.id === cfg.display) || screen.getPrimaryDisplay();
+}
+// L'overlay recouvre la zone utile de l'écran choisi (sans la barre des tâches / barre de menu Mac).
+// Recalculé à chaque changement d'écran : résolution, branchement, débranchement…
+function placeOverlay() {
+  if (!overlay || overlay.isDestroyed()) return;
+  overlay.setBounds(targetDisplay().workArea);
+}
+function listDisplays() {
+  const primary = screen.getPrimaryDisplay().id;
+  return screen.getAllDisplays().map((d, i) => ({
+    id: d.id,
+    label: `Écran ${i + 1} : ${d.size.width}×${d.size.height}${d.id === primary ? ' (principal)' : ''}`
+  }));
+}
+function onDisplaysChanged() {
+  placeOverlay();
+  if (panel && !panel.isDestroyed()) panel.webContents.send('displays', listDisplays());
+}
+
 function createOverlay() {
-  const { x, y, width, height } = screen.getPrimaryDisplay().bounds;
+  const { x, y, width, height } = targetDisplay().workArea;
   overlay = new BrowserWindow({
-    x, y, width, height,
+    x, y, width, height, enableLargerThanScreen: true,
     transparent: true, frame: false, resizable: false, movable: false,
     skipTaskbar: true, focusable: false, hasShadow: false, alwaysOnTop: true, show: false,
     webPreferences: {
@@ -55,13 +79,14 @@ function createOverlay() {
   overlay.setIgnoreMouseEvents(true);
   overlay.loadFile('overlay.html');
   overlay.webContents.on('did-finish-load', pushOverlayState);
+  overlay.webContents.on('did-finish-load', pushOverlayState);
   overlay.once('ready-to-show', () => overlay.showInactive());
 }
 
 /* ---------- Panneau de contrôle ---------- */
 function createPanel() {
   panel = new BrowserWindow({
-    width: 460, height: 820,
+    width: 460, height: Math.min(960, screen.getPrimaryDisplay().workArea.height - 40),
     title: 'LiveKgb',
     autoHideMenuBar: true,
     webPreferences: {
@@ -77,7 +102,9 @@ function showPanel() { if (panel) { panel.show(); panel.focus(); } }
 
 /* ---------- Tray ---------- */
 function createTray() {
-  tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png')));
+  // Mac : image « Template » noire, que macOS recolore selon la barre de menu claire/sombre
+  const icon = process.platform === 'darwin' ? 'trayTemplate.png' : 'tray.png';
+  tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', icon)));
   tray.setToolTip('LiveKgb');
   const menu = () => Menu.buildFromTemplate([
     { label: 'Ouvrir le panneau', click: showPanel },
@@ -163,6 +190,28 @@ ipcMain.handle('send', (_e, m) => {
 });
 ipcMain.on('panic', panic);
 
+/* ---------- Affichage : écran, position, taille ---------- */
+ipcMain.handle('get-displays', () => listDisplays());
+ipcMain.handle('save-display', (_e, d) => {
+  if (Number.isInteger(d.display)) cfg.display = d.display;
+  if (POSITIONS.includes(d.position)) cfg.position = d.position;
+  if (SIZES.includes(d.size)) cfg.size = d.size;
+  saveConfig(); placeOverlay(); pushOverlayState();
+  return cfg;
+});
+let previewImg = '';
+ipcMain.on('preview', () => {
+  if (!overlay || overlay.isDestroyed()) return;
+  if (!previewImg) {
+    try { previewImg = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, 'assets', 'preview.png')).toString('base64'); } catch {}
+  }
+  overlay.webContents.send('clear');
+  overlay.webContents.send('blague', {
+    url: previewImg, caption: "C'est ici que ça s'affichera", duration: 3,
+    from: { name: cfg.name || 'toi', avatar: cfg.avatar }
+  });
+});
+
 app.whenReady().then(() => {
   if (process.platform === 'darwin') app.dock.hide();
   loadConfig();
@@ -170,6 +219,9 @@ app.whenReady().then(() => {
   createPanel();
   createTray();
   connect();
+  screen.on('display-added', onDisplaysChanged);
+  screen.on('display-removed', onDisplaysChanged);
+  screen.on('display-metrics-changed', onDisplaysChanged);
   globalShortcut.register('CommandOrControl+Shift+X', panic);
   globalShortcut.register('CommandOrControl+Shift+M', () => setMuted(!cfg.muted));
   globalShortcut.register('CommandOrControl+Shift+K', showPanel);

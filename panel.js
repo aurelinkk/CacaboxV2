@@ -18,9 +18,42 @@ function fill(c) {
   $('name').value = c.name; $('server').value = c.server; $('room').value = c.room;
   $('muted').checked = c.muted; $('showPresence').checked = c.showPresence !== false;
   setPic(c.avatar);
+  fillDisplay(c);
 }
 
-window.livekgb.getConfig().then(fill);
+/* ----- affichage : écran, position, taille (enregistré tout de suite, sans reconnexion) ----- */
+let disp = { display: 0, position: 'center', size: 'm' };
+function fillDisplay(c) {
+  disp = { display: c.display || 0, position: c.position || 'center', size: c.size || 'm' };
+  $('size').value = disp.size;
+  for (const b of document.querySelectorAll('#posGrid button')) b.classList.toggle('on', b.dataset.pos === disp.position);
+  if ([...$('display').options].some((o) => Number(o.value) === disp.display)) $('display').value = String(disp.display);
+}
+function fillDisplays(list) {
+  const sel = $('display');
+  sel.innerHTML = '';
+  for (const d of list) {
+    const o = document.createElement('option');
+    o.value = String(d.id); o.textContent = d.label;
+    sel.appendChild(o);
+  }
+  if (list.some((d) => d.id === disp.display)) sel.value = String(disp.display);
+  else sel.value = String((list.find((d) => d.label.includes('principal')) || list[0] || {}).id);
+}
+async function saveDisplay(preview = true) {
+  const c = await window.livekgb.saveDisplay(disp);
+  fillDisplay(c);
+  if (preview) window.livekgb.preview();
+}
+$('display').onchange = () => { disp.display = Number($('display').value); saveDisplay(); };
+$('size').onchange = () => { disp.size = $('size').value; saveDisplay(); };
+for (const b of document.querySelectorAll('#posGrid button')) {
+  b.onclick = () => { disp.position = b.dataset.pos; saveDisplay(); };
+}
+$('preview').onclick = () => window.livekgb.preview();
+
+window.livekgb.getDisplays().then(fillDisplays).then(() => window.livekgb.getConfig()).then(fill);
+window.livekgb.on('displays', fillDisplays);
 window.livekgb.on('status', setStatus);
 window.livekgb.on('config', fill);
 

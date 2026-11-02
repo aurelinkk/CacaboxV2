@@ -4,56 +4,62 @@
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; media-src https: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'">
 <style>
-  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; font-family: system-ui, 'Segoe UI', sans-serif; }
+  /* Tout est en unités relatives à l'écran (vw / vh / vmin) : ça s'adapte à n'importe quelle
+     taille et résolution. --s = taille choisie dans le panneau (Petit / Moyen / Grand / Très grand). */
+  :root { --s: 1; --align: center; --text: center; }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
 
-  /* ----- blague au centre ----- */
-  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  /* ----- la blague, placée selon la position choisie ----- */
+  #stage {
+    position: fixed; inset: 0; box-sizing: border-box; padding: 4vmin;
+    display: flex; align-items: center; justify-content: center; pointer-events: none;
+  }
   .card {
-    display: flex; flex-direction: column; align-items: center; gap: 14px;
-    max-width: 70vw; max-height: 80vh;
+    display: flex; flex-direction: column; align-items: var(--align); gap: calc(1.4vmin * var(--s));
+    max-width: min(calc(60vw * var(--s)), 92vw);
     opacity: 0; transform: scale(.6);
     transition: opacity .25s ease, transform .25s cubic-bezier(.2,1.4,.4,1);
   }
   .card.in { opacity: 1; transform: scale(1); }
-  .card img, .card video { max-width: 70vw; max-height: 60vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  .card img.media, .card video.media {
+    display: block; max-width: 100%;
+    max-height: min(calc(50vh * var(--s)), 72vh);
+    border-radius: 1.2vmin; box-shadow: 0 1vmin 4vmin rgba(0,0,0,.5);
+  }
   .caption {
-    font-family: Impact, 'Arial Black', sans-serif;
-    font-size: clamp(28px, 4.5vw, 64px);
-    text-transform: uppercase; text-align: center; color: #fff;
-    -webkit-text-stroke: 3px #000; paint-order: stroke fill;
-    text-shadow: 0 4px 12px rgba(0,0,0,.6);
-    word-break: break-word;
+    font-family: Impact, 'Arial Black', 'Helvetica Neue', sans-serif; font-weight: 900;
+    font-size: clamp(16px, calc(5.5vmin * var(--s)), 140px);
+    text-transform: uppercase; text-align: var(--text); color: #fff;
+    -webkit-text-stroke: max(2px, calc(.35vmin * var(--s))) #000; paint-order: stroke fill;
+    text-shadow: 0 .4vmin 1.2vmin rgba(0,0,0,.6);
+    overflow-wrap: anywhere; line-height: 1.1;
   }
 
-  /* ----- qui a envoyé (haut gauche) ----- */
-  #from {
-    position: fixed; top: 24px; left: 24px;
-    display: flex; align-items: center; gap: 12px;
-    padding: 8px 20px 8px 8px; border-radius: 999px;
-    background: rgba(20,20,24,.85); color: #fff; font-weight: 700; font-size: 20px;
-    box-shadow: 0 6px 24px rgba(0,0,0,.45);
-    opacity: 0; transform: translateX(-40px);
-    transition: opacity .25s ease, transform .3s cubic-bezier(.2,1.2,.4,1);
-    pointer-events: none;
+  /* ----- qui a envoyé (au-dessus du mème) ----- */
+  .from {
+    display: flex; align-items: center; gap: 1vmin;
+    padding: .6vmin 1.8vmin .6vmin .6vmin; border-radius: 999px;
+    background: rgba(20,20,24,.85); color: #fff; font-weight: 700;
+    font-size: clamp(12px, calc(1.9vmin * var(--s)), 32px);
+    box-shadow: 0 .6vmin 2.4vmin rgba(0,0,0,.45);
   }
-  #from.in { opacity: 1; transform: none; }
+  .from .av { width: 2.2em; height: 2.2em; font-size: 1em; }
 
   /* ----- avatars (communs) ----- */
   .av { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; }
-  .av.ini { display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 24px; text-transform: uppercase; }
+  .av.ini { display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; text-transform: uppercase; }
 
   /* ----- connectés (haut droite) ----- */
-  #presence { position: fixed; top: 16px; right: 16px; display: flex; flex-direction: row-reverse; gap: 10px; pointer-events: none; }
+  #presence { position: fixed; top: 1.6vmin; right: 1.6vmin; display: flex; flex-direction: row-reverse; gap: 1vmin; pointer-events: none; }
   .user { display: flex; flex-direction: column; align-items: center; gap: 3px; opacity: .92; }
   .user .wrap { position: relative; }
-  .user .av { width: 44px; height: 44px; font-size: 18px; border: 2px solid rgba(255,255,255,.9); box-shadow: 0 2px 10px rgba(0,0,0,.45); }
-  .user .dot { position: absolute; right: -1px; bottom: -1px; width: 13px; height: 13px; border-radius: 50%; background: #3ddc84; border: 2px solid #1b1b1f; }
-  .user .nm { font-size: 11px; font-weight: 600; color: #fff; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 4px #000, 0 0 2px #000; }
+  .user .av { width: clamp(30px, 4.2vmin, 60px); height: clamp(30px, 4.2vmin, 60px); font-size: clamp(13px, 1.7vmin, 24px); border: 2px solid rgba(255,255,255,.9); box-shadow: 0 2px 10px rgba(0,0,0,.45); }
+  .user .dot { position: absolute; right: -1px; bottom: -1px; width: 28%; height: 28%; border-radius: 50%; background: #3ddc84; border: 2px solid #1b1b1f; }
+  .user .nm { font-size: clamp(10px, 1.1vmin, 15px); font-weight: 600; color: #fff; max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 4px #000, 0 0 2px #000; }
 </style>
 </head>
 <body>
 <div id="presence"></div>
-<div id="from"></div>
 <div id="stage"></div>
 <script src="overlay.js"></script>
 </body>

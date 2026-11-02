@@ -4,7 +4,8 @@ Overlay de blagues entre potes, pour **Windows et Mac**. Quelqu'un envoie un mè
 
 - 🖼️ Image, GIF ou vidéo + légende au centre de l'écran
 - 🟢 Pastilles des connectés en haut à droite, avec photo de profil
-- 👤 Badge « qui a envoyé » en haut à gauche, affiché en même temps que le mème
+- 👤 Badge « qui a envoyé » au-dessus du mème
+- 🖥️ S'adapte à tous les écrans (portable, Retina, 4K…) : chacun choisit son écran, la position et la taille
 - 📎 Lien direct **ou** fichier envoyé depuis ton disque (6 Mo max)
 - 🔇 Mode muet, bouton stop, raccourcis clavier
 - 🫥 Clics traversants : l'overlay ne gêne jamais ce que tu fais
@@ -36,7 +37,11 @@ Télécharge le fichier qui correspond à ta machine dans la dernière version d
 L'appli n'est pas signée (il faut un certificat payant chez Microsoft et Apple), donc l'OS va râler au premier lancement :
 
 - **Windows** : écran bleu SmartScreen → *Informations complémentaires* → *Exécuter quand même*.
-- **Mac** : glisse LiveKgb dans Applications, puis **clic droit sur l'appli → Ouvrir** → *Ouvrir*. Un double-clic classique serait refusé. À faire une seule fois.
+- **Mac** : glisse LiveKgb dans Applications et lance-la. macOS dit qu'il ne peut pas vérifier le développeur : va dans **Réglages Système → Confidentialité et sécurité**, tout en bas, et clique sur **Ouvrir quand même**. À faire une seule fois.
+  Si macOS dit que l'appli est « endommagée » (anciennes versions), ouvre le Terminal et tape :
+  ```bash
+  xattr -cr /Applications/LiveKgb.app
+  ```
 
 Une fois lancée, LiveKgb tourne en tâche de fond : son icône est près de l'horloge sur Windows (parfois cachée derrière la flèche `^`) et dans la barre de menu en haut sur Mac. Clique dessus pour ouvrir le panneau.
 
@@ -52,6 +57,14 @@ Une fois lancée, LiveKgb tourne en tâche de fond : son icône est près de l'h
 3. Clique sur **Enregistrer & connecter**. Le statut passe à « Connecté ✓ (N en ligne) ».
 
 > Le nom du salon sert de mot de passe : qui le connaît peut t'afficher des trucs à l'écran. Choisis un nom pas devinable, genre `livekgb-k7f2q`.
+
+**Où ça s'affiche** (section *Affichage* du panneau, réglée par chacun pour son écran) :
+- **Écran** : si tu as plusieurs écrans, choisis celui où les mèmes apparaissent.
+- **Position** : clique sur une des 9 cases (centre, coins, bords).
+- **Taille** : Petit, Moyen, Grand ou Très grand. Tout est calculé par rapport à la taille de ton écran, donc ça rend pareil sur un portable 13" que sur un écran 4K.
+- **👀 Tester l'affichage** montre un aperçu chez toi seulement, sans rien envoyer aux autres.
+
+L'overlay évite la barre des tâches (Windows) et la barre de menu / le Dock (Mac), et se replace tout seul si tu branches un écran ou changes de résolution.
 
 **Pour envoyer un mème :**
 - Soit tu colles un **lien direct** en `https`, qui finit par `.gif`, `.png`, `.jpg`, `.webp`, `.mp4` ou `.webm`. Un lien de page comme `giphy.com/gifs/...` ne marche pas : il faut l'adresse du fichier (clic droit sur l'image → *Copier l'adresse de l'image*).
@@ -149,7 +162,10 @@ SERVER=wss://cacabox-server.onrender.com ROOM=monsalon node bot.js   # contre le
 main.js            processus principal : fenêtres, tray, WebSocket, raccourcis
 preload.js         pont sécurisé entre le main et les pages
 overlay.html/.js   la fenêtre transparente (mème, badge expéditeur, pastilles)
-panel.html/.js     le panneau de contrôle (profil, connexion, envoi)
+panel.html/.js     le panneau de contrôle (profil, connexion, affichage, envoi)
+assets/            icônes de la barre des tâches / barre de menu, image d'aperçu
+build/icon.png     icône de l'appli (installeurs, Dock, menu Démarrer)
+scripts/           signature ad hoc de l'appli Mac au moment du build
 server/server.js   le relais WebSocket (salons, présence, anti-spam, logs)
 server/bot.js      faux client pour tester seul
 ```
@@ -194,7 +210,7 @@ Le serveur ne stocke rien : il relaie les messages aux membres du salon et garde
 ## 7. Limites connues
 
 - **Jeux en plein écran exclusif** sur Windows : l'overlay n'apparaît pas. En « fenêtré sans bordure », ça marche.
-- **Un seul écran** : l'overlay s'affiche sur l'écran principal.
+- **Un écran à la fois** : l'overlay s'affiche sur l'écran choisi dans le panneau, pas sur tous en même temps.
 - **Pas de signature de code** : avertissements au premier lancement (voir l'installation).
 - **Fichiers limités à 6 Mo** : ils transitent en base64 par le WebSocket, il n'y a pas de stockage. Pour du plus lourd, héberge le fichier et envoie le lien.
 - **Pas d'historique** : un mème raté est perdu.

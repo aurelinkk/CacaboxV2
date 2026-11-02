@@ -28,6 +28,13 @@
   small { color: #8a8a95; display: block; margin-top: 6px; }
   .or { text-align: center; color: #777; margin: 8px 0 0; font-size: 12px; }
   input[type=file] { display: none; }
+  select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #33343c; background: #26262c; color: #fff; font: inherit; }
+  .disp { display: flex; gap: 14px; align-items: flex-start; margin-top: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 24px); gap: 4px; padding: 6px; border-radius: 8px; background: #26262c; border: 1px solid #33343c; flex: none; }
+  .grid button { margin: 0; padding: 0; border-radius: 4px; background: #3a3b44; }
+  .grid button.on { background: #e08a3c; }
+  .disp .col { flex: 1; }
+  .disp .col label:first-child { margin-top: 0; }
 </style>
 </head>
 <body>
@@ -51,6 +58,31 @@
   <label class="chk"><input id="showPresence" type="checkbox"> Afficher les connectés en haut à droite</label>
   <label class="chk"><input id="muted" type="checkbox"> Muet (ne rien afficher chez moi)</label>
   <button id="save">Enregistrer & connecter</button>
+
+  <h2>Affichage</h2>
+  <label>Écran</label>
+  <select id="display"></select>
+  <div class="disp">
+    <div>
+      <label style="margin-top:0">Position</label>
+      <div class="grid" id="posGrid">
+        <button data-pos="top-left" title="En haut à gauche"></button><button data-pos="top" title="En haut"></button><button data-pos="top-right" title="En haut à droite"></button>
+        <button data-pos="left" title="À gauche"></button><button data-pos="center" title="Au centre"></button><button data-pos="right" title="À droite"></button>
+        <button data-pos="bottom-left" title="En bas à gauche"></button><button data-pos="bottom" title="En bas"></button><button data-pos="bottom-right" title="En bas à droite"></button>
+      </div>
+    </div>
+    <div class="col">
+      <label>Taille</label>
+      <select id="size">
+        <option value="s">Petit</option>
+        <option value="m">Moyen</option>
+        <option value="l">Grand</option>
+        <option value="xl">Très grand</option>
+      </select>
+      <button class="alt" id="preview">👀 Tester l'affichage</button>
+    </div>
+  </div>
+  <small>Ces réglages ne concernent que ton écran. Chacun règle le sien.</small>
 
   <h2>Envoyer une blague</h2>
   <label>Lien direct (https) vers .gif .png .jpg .webp .mp4 .webm</label>
