@@ -20,6 +20,7 @@
     transition: opacity .25s ease, transform .25s cubic-bezier(.2,1.4,.4,1);
   }
   .card.in { opacity: 1; transform: scale(1); }
+  .card.flash { transition: none; }
   .card img.media, .card video.media {
     display: block; max-width: 100%;
     max-height: min(calc(50vh * var(--s)), 72vh);

@@ -12,6 +12,7 @@ Toutes les versions depuis le début, la plus récente en haut.
 - **Mises à jour sur Mac** : le bouton « Rechercher une mise à jour » ne trouvait rien sur Mac, car la release ne contenait le paquet de mise à jour que pour Windows. Les Mac M1/M2/M3/M4 et Intel sont maintenant inclus.
 
 ### ✨ Nouveau
+- **Durée à partir de 0,1 s** (au lieu de 2 s) : de quoi faire des flashs ultra-rapides. Le maximum reste 30 s.
 - Ce changelog est affiché dans chaque release.
 
 ---

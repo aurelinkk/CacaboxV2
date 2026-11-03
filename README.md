@@ -76,7 +76,7 @@ L'overlay évite la barre des tâches (Windows) et la barre de menu / le Dock (M
 - un **📎 fichier** de ton disque (6 Mo max) ;
 - ou **juste du texte** : il s'affiche en gros au milieu de l'écran.
 
-Règle la durée (2 à 30 s), puis **Envoyer 🚀**. Le mème s'affiche chez tout le monde dans le salon, toi compris. Une vidéo qui finit avant la durée libère l'écran plus tôt.
+Règle la durée (de 0,1 à 30 s), puis **Envoyer 🚀**. Le mème s'affiche chez tout le monde dans le salon, toi compris. Une vidéo qui finit avant la durée libère l'écran plus tôt.
 
 | Lien | Ce qui s'affiche |
 |---|---|

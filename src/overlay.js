@@ -74,6 +74,8 @@ function show(m) {
   stage.innerHTML = ''; embedFrame = null;
   const card = document.createElement('div');
   card.className = 'card';
+  // flash (moins d'une demi-seconde) : pas d'animation, sinon on ne verrait rien
+  if ((m.duration || 6) < 0.5) card.classList.add('flash');
 
   // badge « qui a envoyé », au-dessus du mème
   const from = document.createElement('div');
@@ -162,5 +164,5 @@ function hide() {
   const card = stage.firstChild;
   if (!card) { busy = false; next(); return; }
   card.classList.remove('in');
-  setTimeout(() => { stage.innerHTML = ''; embedFrame = null; busy = false; next(); }, 300);
+  setTimeout(() => { stage.innerHTML = ''; embedFrame = null; busy = false; next(); }, card.classList.contains('flash') ? 0 : 300);
 }

@@ -27,7 +27,8 @@ function validMedia(u) {
   if (u.startsWith('data:')) return u.length <= MAX_DATA_URL && DATA_RE.test(u);
   try { return new URL(u).protocol === 'https:' && u.length <= 500; } catch { return false; }
 }
-const clampDuration = (d) => Math.min(Math.max(Number(d) || 6, 2), 30);
+// de 0,1 s à 30 s, arrondi au dixième
+const clampDuration = (d) => Math.round(Math.min(Math.max(Number(d) || 6, 0.1), 30) * 10) / 10;
 function validAvatar(a) {
   return typeof a === 'string' && a.startsWith('data:image/') && a.length <= 30000;
 }

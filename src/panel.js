@@ -113,7 +113,7 @@ $('send').onclick = async () => {
   if (!url && !$('caption').value.trim()) return setStatus({ text: 'Mets un texte, un lien ou un fichier 🙂' });
 
   const r = await window.livekgb.send({
-    url, caption: $('caption').value, duration: Number($('duration').value) || 6
+    url, caption: $('caption').value, duration: Number(String($('duration').value).replace(',', '.')) || 6
   });
   if (!r.ok) setStatus({ text: '⚠ ' + r.error });
   else if (attached) $('clearFile').click();
