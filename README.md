@@ -12,6 +12,8 @@ Overlay de blagues entre potes, pour **Windows et Mac**. Quelqu'un envoie un mè
 
 ---
 
+📜 Ce qui a changé à chaque version : **[CHANGELOG.md](CHANGELOG.md)** (aussi affiché dans chaque release).
+
 ## Sommaire
 1. [Installation pour les potes](#1-installation-pour-les-potes)
 2. [Utilisation](#2-utilisation)
@@ -194,12 +196,12 @@ server/bot.js      faux client pour tester seul
 
 Les installeurs sont construits par **GitHub Actions** (`.github/workflows/build.yml`), pas besoin d'avoir un Mac.
 
-1. Monte la version dans `src-tauri/tauri.conf.json` (ex. `"version": "0.6.0"`).
+1. Monte la version dans `src-tauri/tauri.conf.json` (ex. `"version": "0.7.0"`) et ajoute une section en haut de `CHANGELOG.md` : c'est le texte de la release.
 2. Commit + push sur `main`.
-3. Crée un tag sur ce commit et pousse-le. Dans GitHub Desktop : *History* → clic droit sur le commit → *Create Tag* → `v0.6.0` → *Push origin*. En ligne de commande :
+3. Crée un tag sur ce commit et pousse-le. Dans GitHub Desktop : *History* → clic droit sur le commit → *Create Tag* → `v0.7.0` → *Push origin*. En ligne de commande :
    ```bash
-   git tag v0.6.0
-   git push origin v0.6.0
+   git tag v0.7.0
+   git push origin v0.7.0
    ```
 4. Onglet **Actions** : le build prend 5 à 10 min, puis le `.exe` et les `.dmg` apparaissent dans **Releases**.
 
@@ -254,7 +256,7 @@ Vérifiez que vous avez tous écrit le salon exactement pareil, majuscules compr
 Regarde les logs Render : une ligne `x` donne la raison. Souvent le lien n'est pas un lien *direct* : teste-le dans ton navigateur, tu dois voir l'image seule, pas une page web. Vérifie aussi que le mode muet est désactivé.
 
 **Le build échoue dans Actions / pas de release**
-Le tag doit commencer par `v` ou un chiffre (`v0.6.0`, `1.0`) et pointer sur le dernier commit. Ouvre le run en échec dans l'onglet Actions pour voir l'erreur.
+Le tag doit commencer par `v` ou un chiffre (`v0.7.0`, `1.0`) et pointer sur le dernier commit. Ouvre le run en échec dans l'onglet Actions pour voir l'erreur.
 
 **« npm : Impossible de charger le fichier ... npm.ps1 » (Windows)**
 PowerShell bloque les scripts. Une fois pour toutes :

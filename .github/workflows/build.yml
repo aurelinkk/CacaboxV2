@@ -15,11 +15,12 @@ jobs:
     outputs:
       id: ${{ steps.rel.outputs.id }}
     steps:
+      - uses: actions/checkout@v4
       - id: rel
         uses: softprops/action-gh-release@v2
         with:
           name: LiveKgb ${{ github.ref_name }}
-          body: Télécharge le fichier qui correspond à ta machine ci-dessous. Si LiveKgb est déjà installé (0.6.0 ou plus), utilise plutôt le bouton « Rechercher une mise à jour » dans l'appli.
+          body_path: CHANGELOG.md   # le changelog complet, depuis la première version
 
   build:
     needs: release
