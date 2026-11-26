@@ -91,9 +91,9 @@ Règle la durée (de 0,1 à 30 s), puis **Envoyer 🚀**. Le mème s'affiche che
 
 | Raccourci | Effet |
 |---|---|
-| `Ctrl/Cmd + Shift + X` | Stop : vide l'écran immédiatement |
-| `Ctrl/Cmd + Shift + M` | Muet on/off : ne plus rien recevoir |
-| `Ctrl/Cmd + Shift + K` | Ouvrir le panneau |
+| `Ctrl/Cmd + Alt + Shift + X` | Stop : vide l'écran immédiatement |
+| `Ctrl/Cmd + Alt + Shift + M` | Muet on/off : ne plus rien recevoir |
+| `Ctrl/Cmd + Alt + Shift + K` | Ouvrir le panneau |
 
 Pratique si quelqu'un envoie une bêtise pendant que tu partages ton écran.
 
@@ -268,7 +268,7 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 Elles viennent des outils de build, pas de l'appli. Ne lance pas `npm audit fix --force`.
 
 **L'overlay est resté coincé à l'écran**
-`Ctrl/Cmd + Shift + X`. Sinon, clique sur l'icône dans la barre des tâches → *Quitter*.
+`Ctrl/Cmd + Alt + Shift + X`. Sinon, clique sur l'icône dans la barre des tâches → *Quitter*.
 
 ---
 

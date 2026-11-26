@@ -8,7 +8,7 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Emitter, Manager, WindowEvent,
 };
-use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut, ShortcutState};
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 fn show_panel(app: &AppHandle) {
     if let Some(w) = app.get_webview_window("panel") {
@@ -40,19 +40,23 @@ fn mac_overlay_on_top(w: &tauri::WebviewWindow) {
 }
 
 fn main() {
+    // Ctrl/Cmd + Alt + Shift : combinaison rarement prise par d'autres applis
+    // (Ctrl+Shift+M est par exemple déjà utilisé par Parsec).
     let cmd = if cfg!(target_os = "macos") { Modifiers::SUPER } else { Modifiers::CONTROL };
-    let stop = Shortcut::new(Some(cmd | Modifiers::SHIFT), Code::KeyX);
-    let mute = Shortcut::new(Some(cmd | Modifiers::SHIFT), Code::KeyM);
-    let open = Shortcut::new(Some(cmd | Modifiers::SHIFT), Code::KeyK);
+    let mods = Some(cmd | Modifiers::ALT | Modifiers::SHIFT);
+    let stop = Shortcut::new(mods, Code::KeyX);
+    let mute = Shortcut::new(mods, Code::KeyM);
+    let open = Shortcut::new(mods, Code::KeyK);
 
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_panel(app)))
         .plugin(tauri_plugin_updater::Builder::new().build()) // mises à jour depuis les Releases GitHub
         .plugin(tauri_plugin_process::init()) // redémarrer après une mise à jour
         .plugin(
+            // Pas de .with_shortcuts() ici : si une autre appli a déjà pris un raccourci,
+            // tout le plugin échouait et LiveKgb plantait au lancement. Ils sont enregistrés
+            // un par un dans setup(), et un raccourci indisponible est simplement ignoré.
             tauri_plugin_global_shortcut::Builder::new()
-                .with_shortcuts([stop, mute, open])
-                .expect("raccourcis")
                 .with_handler(move |app, sc, ev| {
                     if ev.state() != ShortcutState::Pressed {
                         return;
@@ -67,9 +71,16 @@ fn main() {
                 })
                 .build(),
         )
-        .setup(|app| {
+        .setup(move |app| {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory); // pas d'icône dans le Dock
+
+            // Raccourcis globaux : un échec ne doit jamais empêcher l'appli de démarrer
+            for (sc, nom) in [(stop, "stop"), (mute, "muet"), (open, "panneau")] {
+                if let Err(e) = app.global_shortcut().register(sc) {
+                    eprintln!("LiveKgb : raccourci « {nom} » indisponible (déjà pris par une autre appli ?) : {e}");
+                }
+            }
 
             // Overlay : clics traversants, au-dessus de tout
             let overlay = app.get_webview_window("overlay").expect("overlay");

@@ -6,6 +6,16 @@ Toutes les versions depuis le début, la plus récente en haut.
 
 ---
 
+## v0.6.2 (26 novembre 2026)
+
+### 🐛 Corrigé
+- **LiveKgb ne se lançait pas sur certains PC** : si une autre appli utilisait déjà un des raccourcis clavier, l'appli se fermait aussitôt sans message. Un raccourci indisponible est maintenant ignoré et LiveKgb démarre quand même.
+
+### 🔄 Changé
+- **Nouveaux raccourcis : Ctrl/Cmd + Alt + Shift + X / M / K** (au lieu de Ctrl/Cmd + Shift), car Ctrl+Shift+M ou X sont souvent déjà pris (Parsec…).
+
+---
+
 ## v0.6.1 (3 novembre 2026)
 
 ### 🐛 Corrigé
